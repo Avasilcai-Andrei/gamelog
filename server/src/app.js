@@ -7,7 +7,7 @@ import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const distPath = join(__dirname, '../../../dist')
+const distPath = join(__dirname, '../../dist')
 import { createHandler } from 'graphql-http/lib/use/express'
 import { validate } from 'graphql'
 import gameRoutes from './routes/gameRoutes.js'
