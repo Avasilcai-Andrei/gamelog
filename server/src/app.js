@@ -107,7 +107,7 @@ export const createApp = (broadcast) => {
 
   if (existsSync(distPath)) {
     app.use(express.static(distPath))
-    app.get('*', (req, res) => res.sendFile(join(distPath, 'index.html')))
+    app.get(/(.*)/, (req, res) => res.sendFile(join(distPath, 'index.html')))
   }
 
   return app
