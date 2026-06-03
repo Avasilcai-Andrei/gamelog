@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "dev:server": "node --env-file=.env server/src/index.js",
-    "start": "node server/src/index.js",
+    "start": "npm run build && node server/src/index.js",
     "setup:certs": "node server/scripts/setup-certs.js",
     "build": "vite build",
     "lint": "eslint .",

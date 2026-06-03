@@ -2,6 +2,12 @@ import express from 'express'
 import cors from 'cors'
 import session from 'express-session'
 import passport from 'passport'
+import { existsSync } from 'fs'
+import { fileURLToPath } from 'url'
+import { dirname, join } from 'path'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
+const distPath = join(__dirname, '../../../dist')
 import { createHandler } from 'graphql-http/lib/use/express'
 import { validate } from 'graphql'
 import gameRoutes from './routes/gameRoutes.js'
@@ -98,6 +104,11 @@ export const createApp = (broadcast) => {
     if (res.headersSent) return next(err)
     return res.status(500).json({ error: 'Internal server error' })
   })
+
+  if (existsSync(distPath)) {
+    app.use(express.static(distPath))
+    app.get('*', (req, res) => res.sendFile(join(distPath, 'index.html')))
+  }
 
   return app
 }
