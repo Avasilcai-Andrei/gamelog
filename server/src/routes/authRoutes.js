@@ -19,7 +19,7 @@ router.get(
 
 router.get(
   '/google/callback',
-  passport.authenticate('google', { session: false, failureRedirect: '/login' }),
+  passport.authenticate('google', { session: false, failureRedirect: `${process.env.CLIENT_URL || 'http://localhost:5173'}/login` }),
   (req, res) => {
     const { token } = req.user
     const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173'
