@@ -1948,7 +1948,9 @@ html, body, #root {
   }
   textarea, textarea.input { min-height: 80px; }
   .btn { padding: 10px 16px; font-size: 14px; min-height: 42px; }
-  .navbar-logout, .lore-vote-btn, .lore-zoom-btn { min-height: 0; }
+  .navbar-logout, .lore-vote-btn { min-height: 0; }
+  /* Icon-only zoom buttons must keep their square size, not the .btn padding. */
+  .lore-zoom-btn { width: 40px; height: 40px; min-height: 0; padding: 0; flex-shrink: 0; }
 
   .auth-card {
     width: 100%;
