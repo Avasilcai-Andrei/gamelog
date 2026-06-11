@@ -45,11 +45,11 @@ export default function AdminLogs() {
               <tr><td colSpan={5} className="table-empty">No logs.</td></tr>
             ) : logs.map(log => (
               <tr key={log.id}>
-                <td>{log.userId}</td>
-                <td>{log.roleName}</td>
-                <td>{log.action}</td>
-                <td>{log.statusCode}</td>
-                <td>{new Date(log.timestamp).toLocaleString()}</td>
+                <td data-label="User">{log.userId}</td>
+                <td data-label="Role">{log.roleName}</td>
+                <td data-label="Action">{log.action}</td>
+                <td data-label="Status">{log.statusCode}</td>
+                <td data-label="Timestamp">{new Date(log.timestamp).toLocaleString()}</td>
               </tr>
             ))}
           </tbody>

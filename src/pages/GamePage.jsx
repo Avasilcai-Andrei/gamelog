@@ -42,8 +42,6 @@ export default function GamePage() {
   const totalPlayers = entries.length
   const totalHours = entries.reduce((sum, e) => sum + (e.hours || 0), 0)
   const avgHours = totalPlayers > 0 ? Math.round(totalHours / totalPlayers) : 0
-  const completedCount = entries.filter(e => e.status === 'completed').length
-  const completionRate = totalPlayers > 0 ? Math.round((completedCount / totalPlayers) * 100) : 0
   const avgProgress = entries.filter(e => e.estimatedPlaytime > 0).length > 0
     ? Math.round(
         entries
@@ -128,8 +126,8 @@ export default function GamePage() {
                 <tr key={entry.userId + entry.id}
                   className="clickable-row"
                   onClick={() => navigate(`/player/${entry.userId}`)}>
-                  <td className="gamepage-rank">{medal}</td>
-                  <td>
+                  <td className="gamepage-rank" data-label="#">{medal}</td>
+                  <td data-label="Player">
                     <div className="gamepage-player">
                       <div className="gamepage-avatar">
                         {username.slice(0, 2).toUpperCase()}
@@ -137,16 +135,16 @@ export default function GamePage() {
                       <span className="text-strong">{username}</span>
                     </div>
                   </td>
-                  <td>
+                  <td data-label="Status">
                     <span className={`status-badge status-${entry.status} text-capitalize`}>
                       {entry.status}
                     </span>
                   </td>
-                  <td>{entry.hours}h</td>
-                  <td className="text-secondary">
+                  <td data-label="Hours Played">{entry.hours}h</td>
+                  <td className="text-secondary" data-label="Est. Playtime">
                     {entry.estimatedPlaytime ? `${entry.estimatedPlaytime}h` : '—'}
                   </td>
-                  <td>
+                  <td data-label="Completion">
                     {pct !== null ? (
                       <div className="gamepage-progress-row">
                         <div className="gamepage-progress-track">

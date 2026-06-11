@@ -147,11 +147,11 @@ export default function Stats() {
                 </tr>
               ) : genreRows.map(row => (
                 <tr key={row.genre}>
-                  <td style={{ fontWeight: 500 }}>{row.genre}</td>
-                  <td>{row.games}</td>
-                  <td>{row.totalHours}h</td>
-                  <td>{row.avgHours}h</td>
-                  <td>
+                  <td style={{ fontWeight: 500 }} data-label="Genre">{row.genre}</td>
+                  <td data-label="Games">{row.games}</td>
+                  <td data-label="Total Hours">{row.totalHours}h</td>
+                  <td data-label="Avg Hours">{row.avgHours}h</td>
+                  <td data-label="Completion Rate">
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <div style={{ flex: 1, height: 6, background: 'var(--bg-secondary)', borderRadius: 3, overflow: 'hidden' }}>
                         <div style={{ width: `${row.completionRate}%`, height: '100%', background: 'var(--accent-blue)', borderRadius: 3 }} />

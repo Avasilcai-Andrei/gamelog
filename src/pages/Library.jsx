@@ -115,11 +115,11 @@ export default function Library() {
                     : <div className="thumb-36 thumb-placeholder" />
                   }
                 </td>
-                <td className="text-strong">{game.title}</td>
-                <td className="text-secondary">{game.genre}</td>
-                <td><span className={`${statusClass(game.status)} text-capitalize`}>{game.status}</span></td>
-                <td>{game.hours}h</td>
-                <td className="text-secondary">{game.estimatedPlaytime ? `${game.estimatedPlaytime}h` : '—'}</td>
+                <td className="text-strong" data-label="Title">{game.title}</td>
+                <td className="text-secondary" data-label="Genre">{game.genre}</td>
+                <td data-label="Status"><span className={`${statusClass(game.status)} text-capitalize`}>{game.status}</span></td>
+                <td data-label="Hours">{game.hours}h</td>
+                <td className="text-secondary" data-label="Est. Playtime">{game.estimatedPlaytime ? `${game.estimatedPlaytime}h` : '—'}</td>
                 <td onClick={e => e.stopPropagation()}>
                   <div className="row-actions">
                     <button className="btn btn-ghost btn-sm"

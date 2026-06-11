@@ -91,10 +91,10 @@ export default function PlayerProfile() {
                     : <div style={{ width: 36, height: 36, borderRadius: 6, background: 'var(--bg-secondary)' }} />
                   }
                 </td>
-                <td style={{ fontWeight: 500 }}>{game.title}</td>
-                <td style={{ color: 'var(--text-secondary)' }}>{game.genre}</td>
-                <td><span className={`status-badge status-${game.status}`} style={{ textTransform: 'capitalize' }}>{game.status}</span></td>
-                <td>{game.hours}h</td>
+                <td style={{ fontWeight: 500 }} data-label="Title">{game.title}</td>
+                <td style={{ color: 'var(--text-secondary)' }} data-label="Genre">{game.genre}</td>
+                <td data-label="Status"><span className={`status-badge status-${game.status}`} style={{ textTransform: 'capitalize' }}>{game.status}</span></td>
+                <td data-label="Hours">{game.hours}h</td>
               </tr>
             ))}
           </tbody>

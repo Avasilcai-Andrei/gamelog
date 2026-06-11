@@ -184,6 +184,90 @@ export const ChatMessage = sequelize.define('ChatMessage', {
   timestamps: false,
 })
 
+export const LoreNode = sequelize.define('LoreNode', {
+  id: {
+    type: DataTypes.STRING,
+    primaryKey: true,
+    defaultValue: () => createId('ln'),
+  },
+  gameKey: { type: DataTypes.STRING, allowNull: false },
+  label: { type: DataTypes.STRING, allowNull: false },
+  // Plain string (validated by Zod loreNodeSchema) so the set of pin types can
+  // evolve without a Postgres ENUM migration.
+  type: { type: DataTypes.STRING, allowNull: false },
+  description: { type: DataTypes.STRING(500), allowNull: false },
+  x: { type: DataTypes.FLOAT, allowNull: false, defaultValue: 35 },
+  y: { type: DataTypes.FLOAT, allowNull: false, defaultValue: 35 },
+  createdBy: { type: DataTypes.STRING, allowNull: false, defaultValue: 'Unknown' },
+  createdAt: { type: DataTypes.STRING, allowNull: false, defaultValue: () => new Date().toISOString() },
+}, {
+  tableName: 'lore_nodes',
+  timestamps: false,
+  indexes: [{ fields: ['gameKey'] }],
+})
+
+export const LoreEdge = sequelize.define('LoreEdge', {
+  id: {
+    type: DataTypes.STRING,
+    primaryKey: true,
+    defaultValue: () => createId('le'),
+  },
+  gameKey: { type: DataTypes.STRING, allowNull: false },
+  fromNodeId: { type: DataTypes.STRING, allowNull: false },
+  toNodeId: { type: DataTypes.STRING, allowNull: false },
+  createdAt: { type: DataTypes.STRING, allowNull: false, defaultValue: () => new Date().toISOString() },
+}, {
+  tableName: 'lore_edges',
+  timestamps: false,
+  indexes: [{ fields: ['gameKey'] }],
+})
+
+export const LoreMapMeta = sequelize.define('LoreMapMeta', {
+  gameKey: { type: DataTypes.STRING, primaryKey: true },
+  backgroundUrl: { type: DataTypes.STRING, allowNull: false, defaultValue: '' },
+  updatedBy: { type: DataTypes.STRING, allowNull: false, defaultValue: '' },
+  updatedAt: { type: DataTypes.STRING, allowNull: false, defaultValue: () => new Date().toISOString() },
+}, {
+  tableName: 'lore_map_meta',
+  timestamps: false,
+})
+
+export const LoreProposal = sequelize.define('LoreProposal', {
+  id: {
+    type: DataTypes.STRING,
+    primaryKey: true,
+    defaultValue: () => createId('lp'),
+  },
+  gameKey: { type: DataTypes.STRING, allowNull: false },
+  kind: { type: DataTypes.ENUM('add', 'edit', 'delete'), allowNull: false },
+  targetNodeId: { type: DataTypes.STRING, allowNull: true },
+  payload: { type: DataTypes.TEXT, allowNull: false, defaultValue: '{}' },
+  reason: { type: DataTypes.STRING(500), allowNull: false },
+  createdBy: { type: DataTypes.STRING, allowNull: false, defaultValue: 'Unknown' },
+  createdAt: { type: DataTypes.STRING, allowNull: false, defaultValue: () => new Date().toISOString() },
+  status: { type: DataTypes.ENUM('open', 'approved', 'applied', 'rejected'), allowNull: false, defaultValue: 'open' },
+  resolvedBy: { type: DataTypes.STRING, allowNull: true },
+}, {
+  tableName: 'lore_proposals',
+  timestamps: false,
+  indexes: [{ fields: ['gameKey'] }, { fields: ['status'] }],
+})
+
+export const LoreVote = sequelize.define('LoreVote', {
+  id: {
+    type: DataTypes.STRING,
+    primaryKey: true,
+    defaultValue: () => createId('lv'),
+  },
+  proposalId: { type: DataTypes.STRING, allowNull: false },
+  userId: { type: DataTypes.STRING, allowNull: false },
+  createdAt: { type: DataTypes.STRING, allowNull: false, defaultValue: () => new Date().toISOString() },
+}, {
+  tableName: 'lore_votes',
+  timestamps: false,
+  indexes: [{ unique: true, fields: ['proposalId', 'userId'] }],
+})
+
 const recalcGameHours = async (gameId) => {
   const sessions = await Session.findAll({ where: { gameId }, attributes: ['duration'] })
   const totalMins = sessions.reduce((sum, s) => sum + (Number(s.duration) || 0), 0)
@@ -249,6 +333,7 @@ export const PERMISSION_NAMES = {
   GENERATOR_CONTROL: 'generator:control',
   USERS_LIST: 'users:list',
   ADMIN_ACCESS: 'admin:access',
+  LORE_WRITE: 'lore:write',
 }
 
 export const ROLE_PERMISSIONS = {
@@ -268,6 +353,7 @@ const seedRolesAndPermissions = async () => {
     [PERMISSION_NAMES.GENERATOR_CONTROL]: 'Start and stop the data generator',
     [PERMISSION_NAMES.USERS_LIST]: 'View the user list',
     [PERMISSION_NAMES.ADMIN_ACCESS]: 'Access the admin dashboard',
+    [PERMISSION_NAMES.LORE_WRITE]: 'Create and edit lore maps',
   }
   for (const name of Object.values(PERMISSION_NAMES)) {
     await Permission.findOrCreate({ where: { name }, defaults: { description: permissionDescriptions[name] || '' } })

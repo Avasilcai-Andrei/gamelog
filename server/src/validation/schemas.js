@@ -57,3 +57,40 @@ export const passwordResetConfirmSchema = z.object({
   token: z.string().min(1),
   password: z.string().min(6),
 })
+
+const LORE_NODE_TYPES = ['boss', 'dungeon', 'location', 'shop', 'quest', 'item']
+
+export const loreNodeSchema = z.object({
+  label: z.string().trim().min(1).max(80),
+  type: z.enum(LORE_NODE_TYPES),
+  description: z.string().trim().min(1).max(500),
+  x: z.coerce.number().min(0).max(100).default(35),
+  y: z.coerce.number().min(0).max(100).default(35),
+})
+
+export const loreNodeUpdateSchema = loreNodeSchema.partial().refine(
+  value => Object.keys(value).length > 0,
+  { message: 'At least one field is required for update' }
+)
+
+export const loreEdgeSchema = z.object({
+  fromNodeId: z.string().min(1),
+  toNodeId: z.string().min(1),
+})
+
+export const loreMetaSchema = z.object({
+  backgroundUrl: z.string().trim().url().or(z.literal('')).default(''),
+})
+
+export const loreProposalSchema = z.object({
+  kind: z.enum(['add', 'edit', 'delete']),
+  targetNodeId: z.string().min(1).optional(),
+  payload: loreNodeSchema.partial().optional(),
+  reason: z.string().trim().min(1).max(500),
+}).refine(
+  value => value.kind === 'add' || Boolean(value.targetNodeId),
+  { message: 'targetNodeId is required for edit/delete proposals', path: ['targetNodeId'] }
+).refine(
+  value => value.kind === 'delete' || (value.payload && Object.keys(value.payload).length > 0),
+  { message: 'payload is required for add/edit proposals', path: ['payload'] }
+)

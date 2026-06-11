@@ -87,9 +87,9 @@ export default function Insights() {
                 </tr>
               ) : filtered.map(game => (
                 <tr key={game.id}>
-                  <td className="text-strong">{game.title}</td>
-                  <td><span className={`status-badge status-${game.status} text-capitalize`}>{game.status}</span></td>
-                  <td>{game.hours}h</td>
+                  <td className="text-strong" data-label="Title">{game.title}</td>
+                  <td data-label="Status"><span className={`status-badge status-${game.status} text-capitalize`}>{game.status}</span></td>
+                  <td data-label="Hours">{game.hours}h</td>
                   <td>
                     <div className="row-actions">
                       <button className="btn btn-ghost btn-sm" onClick={() => setEditGame(game)}>Edit</button>

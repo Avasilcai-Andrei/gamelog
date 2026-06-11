@@ -116,6 +116,94 @@ html, body, #root {
   font-weight: 500;
   font-size: 14px;
 }
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.navbar-logout { padding: 4px 12px; font-size: 12px; }
+
+.navbar-auth-links { display: flex; gap: 8px; }
+
+/* Mobile hamburger + slide-in drawer (hidden on desktop) */
+.navbar-hamburger {
+  display: none;
+  background: transparent;
+  border: none;
+  color: white;
+  cursor: pointer;
+  padding: 6px;
+  line-height: 0;
+}
+
+.nav-drawer-overlay {
+  position: fixed;
+  inset: var(--nav-height) 0 0 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 90;
+}
+
+.nav-drawer {
+  position: fixed;
+  top: var(--nav-height);
+  right: 0;
+  bottom: 0;
+  width: min(80vw, 300px);
+  background: var(--bg-card);
+  border-left: 1px solid var(--border);
+  z-index: 95;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+  overflow-y: auto;
+  animation: drawerIn 0.22s ease;
+}
+
+@keyframes drawerIn {
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
+}
+
+.nav-drawer-tabs { display: flex; flex-direction: column; gap: 4px; }
+
+.nav-drawer-link {
+  display: block;
+  padding: 14px;
+  border-radius: 8px;
+  color: var(--text-primary);
+  text-decoration: none;
+  font-weight: 600;
+  font-size: 15px;
+}
+
+.nav-drawer-link:hover,
+.nav-drawer-link.active {
+  background: var(--bg-card-hover);
+  color: white;
+}
+
+.nav-drawer-footer {
+  margin-top: auto;
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: flex-start;
+}
+
+.nav-drawer-user { color: var(--text-secondary); font-size: 14px; font-weight: 600; }
+
+.nav-drawer-logout { align-self: stretch; }
+
+@media (min-width: 769px) {
+  .navbar-hamburger,
+  .nav-drawer,
+  .nav-drawer-overlay { display: none !important; }
+}
+
 .page {
   margin-top: var(--nav-height);
   min-height: calc(100vh - var(--nav-height));
@@ -1328,6 +1416,59 @@ html, body, #root {
 .lore-canvas {
   position: relative;
   overflow: hidden;
+  background: #0b0d16;
+}
+
+/* When a map image is set, the image sits at the top of the canvas (in flow,
+   defining pin coordinates) while the dark canvas fills any space below it —
+   no cropping, and no card background showing through. */
+.lore-canvas-pannable {
+  cursor: grab;
+  touch-action: none;
+}
+.lore-canvas-pannable:active { cursor: grabbing; }
+
+/* Pan/zoom container — transformed; the image inside defines its size. */
+.lore-viewport {
+  position: relative;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+.lore-canvas-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+.lore-zoom-controls {
+  position: absolute;
+  right: 12px;
+  bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  z-index: 3;
+}
+
+.lore-zoom-btn {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(10, 12, 24, 0.82);
+  border: 1px solid var(--border);
+}
+
+.lore-canvas-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(9, 10, 18, 0.22);
+  pointer-events: none;
 }
 
 .lore-edges {
@@ -1362,6 +1503,117 @@ html, body, #root {
   grid-template-columns: 1fr 1fr;
   gap: 10px;
 }
+
+.lore-topbar-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.lore-error {
+  margin-bottom: 12px;
+  color: var(--accent-red);
+}
+
+.lore-canvas-hint {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  z-index: 1;
+}
+
+.lore-delete-btn { color: var(--accent-red); }
+
+.lore-panel-actions {
+  display: flex;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.lore-panel-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.lore-panel-type {
+  margin-top: 4px;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.lore-bg-panel {
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+  margin-bottom: 4px;
+}
+
+.lore-sidebar-gap { margin-top: 12px; }
+
+.lore-badge {
+  margin-left: 6px;
+  background: var(--accent-blue);
+  color: #fff;
+  border-radius: 999px;
+  font-size: 11px;
+  padding: 0 6px;
+  line-height: 16px;
+}
+
+/* Proposals panel */
+.lore-proposals { margin-top: 16px; }
+
+.lore-proposals-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.lore-subtitle { font-size: 16px; font-weight: 600; }
+
+.lore-proposal-row {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  padding: 12px 14px;
+  margin-bottom: 8px;
+}
+
+.lore-proposal-main { min-width: 0; }
+.lore-proposal-reason { font-size: 12px; margin: 4px 0; font-style: italic; }
+
+.lore-proposal-side {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.lore-votes { font-size: 12px; color: var(--text-secondary); }
+
+.lore-vote-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  font-size: 12px;
+}
+
+.lore-resolve { display: flex; gap: 6px; }
+
+.lore-status { text-transform: capitalize; font-weight: 600; }
+.lore-status-open { color: var(--text-secondary); }
+.lore-status-approved { color: var(--accent-orange); }
+.lore-status-applied { color: var(--accent-green); }
+.lore-status-rejected { color: var(--accent-red); }
 
 .insights-head {
   display: flex;
@@ -1542,25 +1794,13 @@ html, body, #root {
     font-size: 22px;
   }
 
-  .navbar-tabs {
-    gap: 2px;
-    overflow-x: auto;
-    max-width: 58vw;
-    scrollbar-width: none;
-  }
-
-  .navbar-tabs::-webkit-scrollbar {
+  .navbar-tabs,
+  .navbar-right {
     display: none;
   }
 
-  .navbar-tab {
-    white-space: nowrap;
-    padding: 6px 10px;
-    font-size: 12px;
-  }
-
-  .navbar-user {
-    display: none;
+  .navbar-hamburger {
+    display: inline-flex;
   }
 
   .library-header {
@@ -1689,4 +1929,71 @@ html, body, #root {
   color: var(--text-muted);
   text-transform: uppercase;
   letter-spacing: 0.5px;
+}
+
+/* ============================================================
+   Phone breakpoint (<=640px) — overflow guards, tap targets,
+   stacked-card tables, and form/lore tweaks.
+   ============================================================ */
+@media (max-width: 640px) {
+  html, body { overflow-x: hidden; }
+  img, svg, video { max-width: 100%; }
+
+  .page { padding: 14px 12px; }
+
+  /* Comfortable tap targets; 16px inputs prevent iOS focus-zoom */
+  .input, input, select, textarea {
+    font-size: 16px;
+    min-height: 44px;
+  }
+  textarea, textarea.input { min-height: 80px; }
+  .btn { padding: 10px 16px; font-size: 14px; min-height: 42px; }
+  .navbar-logout, .lore-vote-btn, .lore-zoom-btn { min-height: 0; }
+
+  .auth-card {
+    width: 100%;
+    max-width: 360px;
+    margin: 0 16px;
+    padding: 28px 20px;
+  }
+
+  /* Wide tables -> stacked, labeled cards */
+  .table { min-width: 0; }
+  .table thead { display: none; }
+  .table, .table tbody, .table tr, .table td { display: block; width: 100%; }
+  .table tr {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg-card);
+    padding: 8px 12px;
+    margin-bottom: 10px;
+  }
+  .table td {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 0;
+    border: none;
+    text-align: right;
+  }
+  .table td::before {
+    content: attr(data-label);
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    text-align: left;
+    flex-shrink: 0;
+  }
+  .table td:empty { display: none; }
+
+  .gamepage-table-card,
+  .library-table-card { overflow-x: visible; }
+
+  /* Lore map: show the map before the controls; bigger pin targets */
+  .lore-canvas { order: -1; }
+  .lore-node { padding: 8px 12px; }
+
+  .lore-proposal-row { flex-direction: column; align-items: stretch; }
+  .lore-proposal-side { align-items: flex-start; }
 }
