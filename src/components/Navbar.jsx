@@ -54,7 +54,7 @@ export default function Navbar() {
             <span className={`sync-status ${offline ? 'offline' : 'online'}`}>
               {offline ? `Offline · queued ${queued}` : 'Online'}
             </span>
-            <span className="navbar-user">{currentUser.username}</span>
+            <Link to={`/player/${currentUser.id}`} className="navbar-user" title="View your profile">{currentUser.username}</Link>
             <button className="btn btn-ghost navbar-logout" onClick={handleLogout}>
               Logout
             </button>
@@ -89,7 +89,13 @@ export default function Navbar() {
                   <span className={`sync-status ${offline ? 'offline' : 'online'}`}>
                     {offline ? `Offline · queued ${queued}` : 'Online'}
                   </span>
-                  <span className="nav-drawer-user">{currentUser.username}</span>
+                  <Link
+                    to={`/player/${currentUser.id}`}
+                    className="nav-drawer-user"
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    {currentUser.username}
+                  </Link>
                   <button className="btn btn-ghost nav-drawer-logout" onClick={handleLogout}>
                     Logout
                   </button>

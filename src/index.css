@@ -115,7 +115,11 @@ html, body, #root {
   color: white;
   font-weight: 500;
   font-size: 14px;
+  text-decoration: none;
+  cursor: pointer;
+  transition: opacity 0.15s;
 }
+.navbar-user:hover { opacity: 0.75; text-decoration: underline; }
 
 .navbar-right {
   display: flex;
@@ -194,7 +198,8 @@ html, body, #root {
   align-items: flex-start;
 }
 
-.nav-drawer-user { color: var(--text-secondary); font-size: 14px; font-weight: 600; }
+.nav-drawer-user { color: var(--text-secondary); font-size: 14px; font-weight: 600; text-decoration: none; }
+.nav-drawer-user:hover { color: var(--text-primary); }
 
 .nav-drawer-logout { align-self: stretch; }
 
