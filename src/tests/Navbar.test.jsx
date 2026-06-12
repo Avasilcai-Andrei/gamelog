@@ -62,7 +62,6 @@ describe('Navbar', () => {
     expect(screen.getByText('MyLibrary')).toBeInTheDocument()
     expect(screen.getByText('GameList')).toBeInTheDocument()
     expect(screen.getByText('Stats')).toBeInTheDocument()
-    expect(screen.getByText('Insights')).toBeInTheDocument()
     expect(screen.getByText('navuser')).toBeInTheDocument()
   })
 

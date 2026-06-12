@@ -43,9 +43,9 @@ describe('ActivityContext', () => {
   })
 
   it('provides topRoutes sorted by visits', () => {
-    const { result } = renderHook(() => useActivity(), { wrapper: wrapWithRouter(['/insights']) })
+    const { result } = renderHook(() => useActivity(), { wrapper: wrapWithRouter(['/stats']) })
     expect(Array.isArray(result.current.topRoutes)).toBe(true)
     expect(result.current.topRoutes.length).toBeGreaterThan(0)
-    expect(result.current.topRoutes[0][0]).toBe('/insights')
+    expect(result.current.topRoutes[0][0]).toBe('/stats')
   })
 })

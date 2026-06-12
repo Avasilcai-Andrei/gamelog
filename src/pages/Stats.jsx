@@ -17,7 +17,7 @@ const STATUS_COLORS = {
 export default function Stats() {
   const { currentUser } = useAuth()
   const { getStatsByUser, getGamesByUser } = useGames()
-  const { getPreference, setPreference } = useActivity()
+  const { getPreference, setPreference, activity, topRoutes } = useActivity()
   const [view, setView] = useState(() => getPreference('stats_view', 'visual'))
 
   const stats = getStatsByUser(currentUser.id)
@@ -165,6 +165,33 @@ export default function Stats() {
           </table>
         </div>
       )}
+
+      {/* Cookie-based activity tracking — moved here from the old Insights page. */}
+      <div className="card" style={{ marginTop: 20 }}>
+        <div style={{ fontWeight: 600, marginBottom: 16 }}>Cookie Activity Monitor</div>
+        <div className="insights-activity-grid">
+          <div className="stat-card">
+            <div>
+              <div className="stat-card-label">Page Views</div>
+              <div className="stat-card-value">{activity.totalViews}</div>
+            </div>
+          </div>
+          <div className="stat-card">
+            <div>
+              <div className="stat-card-label">Last Route</div>
+              <div className="stat-card-value" style={{ fontSize: 18 }}>{activity.lastPath}</div>
+            </div>
+          </div>
+        </div>
+        <div className="insights-route-list">
+          {topRoutes.map(([route, count]) => (
+            <div key={route} className="insights-route-row">
+              <span>{route}</span>
+              <span>{count}</span>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }

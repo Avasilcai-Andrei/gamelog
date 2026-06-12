@@ -13,7 +13,6 @@ import GameList from './pages/GameList'
 import PlayerProfile from './pages/PlayerProfile'
 import GamePage from './pages/GamePage'
 import LoreMap from './pages/LoreMap'
-import Insights from './pages/Insights'
 import Admin from './pages/Admin'
 import Chat from './pages/Chat'
 import OAuthCallback from './pages/OAuthCallback'
@@ -66,7 +65,6 @@ function AppRoutes() {
         } />
         <Route path="/games/:title" element={<PrivateRoute><GamePage /></PrivateRoute>} />
         <Route path="/games/:title/lore" element={<PrivateRoute><LoreMap /></PrivateRoute>} />
-        <Route path="/insights" element={<PrivateRoute><Insights /></PrivateRoute>} />
         <Route path="/chat" element={<PrivateRoute><Chat /></PrivateRoute>} />
         <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
         <Route path="/oauth/callback" element={<OAuthCallback />} />

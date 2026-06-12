@@ -29,7 +29,7 @@ test('feature 1: register and add game', async ({ page }) => {
   await expect(page.getByRole('cell', { name: 'Celeste' })).toBeVisible()
 })
 
-test('feature 2: table and charts update side-by-side in insights', async ({ page }) => {
+test('feature 2: library table edits and stats charts', async ({ page }) => {
   await registerAndEnterApp(page)
 
   await page.getByRole('button', { name: '+ Add Game' }).click()
@@ -38,15 +38,17 @@ test('feature 2: table and charts update side-by-side in insights', async ({ pag
   await page.locator('.form-group:has(label:has-text("Hours played")) input').fill('12')
   await page.getByRole('button', { name: 'Add game', exact: true }).click()
 
-  await page.getByRole('link', { name: 'Insights' }).click()
-  await expect(page).toHaveURL(/\/insights/)
+  // The game appears in the My Library table and edits persist.
   await expect(page.getByRole('cell', { name: 'Hades' })).toBeVisible()
-  await expect(page.locator('.recharts-wrapper').first()).toBeVisible()
-
   await page.getByRole('button', { name: 'Edit' }).first().click()
   await page.locator('.form-group:has(label:has-text("Hours played")) input').fill('20')
   await page.getByRole('button', { name: 'Save changes' }).click()
   await expect(page.getByRole('cell', { name: '20h' })).toBeVisible()
+
+  // Stats renders charts for that data.
+  await page.getByRole('link', { name: 'Stats' }).click()
+  await expect(page).toHaveURL(/\/stats/)
+  await expect(page.locator('.recharts-wrapper').first()).toBeVisible()
 })
 
 test('feature 3: lore map add nodes and link', async ({ page }) => {

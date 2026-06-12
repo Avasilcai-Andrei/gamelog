@@ -33,7 +33,6 @@ export default function Navbar() {
     { to: '/library', label: 'MyLibrary' },
     { to: '/gamelist', label: 'GameList' },
     { to: '/stats', label: 'Stats' },
-    { to: '/insights', label: 'Insights' },
     { to: '/chat', label: 'Chat' },
     ...(isAdmin ? [{ to: '/admin', label: 'Admin' }] : []),
   ]
