@@ -1,12 +1,60 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useGames } from '../context/GameContext'
+import { useAuth } from '../context/AuthContext'
+import { Trophy } from 'lucide-react'
 
 const PAGE_SIZE = 12
 
+// Card fetches its own skill ranking lazily (only the visible cards mount),
+// surfacing the top player so the list doubles as a leaderboard.
+function GameCard({ game, users, currentUser, onOpen }) {
+  const { getAchievementRanking } = useGames()
+  const [top, setTop] = useState(null)
+
+  useEffect(() => {
+    let active = true
+    getAchievementRanking(game.title).then(r => {
+      if (active) setTop(r.rankings?.[0] || null)
+    })
+    return () => { active = false }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [game.title])
+
+  const topName = top
+    ? (users.find(u => u.id === top.userId)?.username
+        || (top.userId === currentUser?.id ? currentUser.username : 'A player'))
+    : null
+
+  return (
+    <div className="gamelist-card" onClick={onOpen}>
+      {game.coverUrl ? (
+        <img src={game.coverUrl} alt={game.title} className="gamelist-cover"
+          onError={e => e.target.style.display = 'none'} />
+      ) : (
+        <div className="gamelist-cover gamelist-cover-placeholder" />
+      )}
+      <div className="gamelist-info">
+        <div className="gamelist-title">{game.title}</div>
+        <div className="gamelist-meta">{game.genre}</div>
+        <div style={{ marginTop: 8, fontSize: 11, color: 'var(--text-muted)' }}>
+          🎮 {game.entries.length} player{game.entries.length !== 1 ? 's' : ''}
+        </div>
+        {top && (
+          <div className="gamelist-top">
+            <Trophy size={12} /> {topName} · {Math.round(top.score)} pts
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
 export default function GameList() {
   const { games } = useGames()
+  const { getUsers, currentUser } = useAuth()
   const navigate = useNavigate()
+  const users = getUsers()
 
   const [search, setSearch] = useState('')
   const [filterGenre, setFilterGenre] = useState('all')
@@ -78,24 +126,13 @@ export default function GameList() {
 
       <div className="gamelist-grid">
         {visible.map(game => (
-          <div
+          <GameCard
             key={game.title}
-            className="gamelist-card"
-            onClick={() => navigate(`/games/${encodeURIComponent(game.title)}`)}>
-            {game.coverUrl ? (
-              <img src={game.coverUrl} alt={game.title} className="gamelist-cover"
-                onError={e => e.target.style.display = 'none'} />
-            ) : (
-              <div className="gamelist-cover gamelist-cover-placeholder" />
-            )}
-            <div className="gamelist-info">
-              <div className="gamelist-title">{game.title}</div>
-              <div className="gamelist-meta">{game.genre}</div>
-              <div style={{ marginTop: 8, fontSize: 11, color: 'var(--text-muted)' }}>
-                🎮 {game.entries.length} player{game.entries.length !== 1 ? 's' : ''}
-              </div>
-            </div>
-          </div>
+            game={game}
+            users={users}
+            currentUser={currentUser}
+            onOpen={() => navigate(`/games/${encodeURIComponent(game.title)}`)}
+          />
         ))}
         {visible.length === 0 && (
           <div style={{ color: 'var(--text-muted)', gridColumn: '1/-1', textAlign: 'center', padding: 40 }}>

@@ -350,6 +350,32 @@ export function GameProvider({ children }) {
     return { totalGames, totalHours, completionRate, byStatus, byGenre }
   }
 
+  // --- Achievements (skill ranking) ---
+  // Keyed by game title; the server normalizes to lowercase. These hit the
+  // network directly (the catalog comes from RAWG), so they return Promises.
+  const getAchievementCatalog = (title, rawgId) => {
+    const q = rawgId ? `?rawgId=${encodeURIComponent(rawgId)}` : ''
+    return request(`/achievements/${encodeURIComponent(title)}${q}`, { headers: { ...authHeaders } })
+      .then(r => r.items)
+      .catch(() => [])
+  }
+
+  const getMyAchievements = (title) =>
+    request(`/achievements/${encodeURIComponent(title)}/me`, { headers: { ...authHeaders } })
+      .then(r => r.achievementIds)
+      .catch(() => [])
+
+  const setMyAchievements = (title, achievementIds) =>
+    request(`/achievements/${encodeURIComponent(title)}/me`, {
+      method: 'PUT',
+      body: JSON.stringify({ achievementIds }),
+      headers: { ...authHeaders },
+    }).then(r => r.achievementIds)
+
+  const getAchievementRanking = (title) =>
+    request(`/achievements/${encodeURIComponent(title)}/ranking`, { headers: { ...authHeaders } })
+      .catch(() => ({ totalCount: 0, maxScore: 0, rankings: [] }))
+
   const getLeaderboard = () => {
     const allUserIds = [...new Set(games.map(g => g.userId))]
     return allUserIds
@@ -376,6 +402,10 @@ export function GameProvider({ children }) {
     getSessionsByUser,
     getStatsByUser,
     getLeaderboard,
+    getAchievementCatalog,
+    getMyAchievements,
+    setMyAchievements,
+    getAchievementRanking,
     refreshFromServer: hydrateAll,
     forceSync: async () => {
       setSyncing(true)

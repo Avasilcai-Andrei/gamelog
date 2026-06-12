@@ -8,6 +8,7 @@ export const gameCreateSchema = z.object({
   hours: z.coerce.number().min(0).default(0),
   estimatedPlaytime: z.coerce.number().min(0).default(0),
   coverUrl: z.string().trim().url().or(z.literal('')).default(''),
+  rawgId: z.union([z.string(), z.number()]).transform(String).optional(),
 })
 
 export const gameUpdateSchema = gameCreateSchema.partial().refine(
@@ -80,6 +81,10 @@ export const loreEdgeSchema = z.object({
 
 export const loreMetaSchema = z.object({
   backgroundUrl: z.string().trim().url().or(z.literal('')).default(''),
+})
+
+export const userAchievementsSchema = z.object({
+  achievementIds: z.array(z.string().min(1)).default([]),
 })
 
 export const loreProposalSchema = z.object({

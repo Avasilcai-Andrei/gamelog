@@ -142,6 +142,9 @@ export const Game = sequelize.define('Game', {
   hours: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
   estimatedPlaytime: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 0 },
   coverUrl: { type: DataTypes.STRING, allowNull: false, defaultValue: '' },
+  // RAWG game id, captured when a game is picked from RAWG search. Used to fetch
+  // the achievement catalog. Nullable — manually-entered games have no RAWG id.
+  rawgId: { type: DataTypes.STRING, allowNull: true },
   addedAt: { type: DataTypes.STRING, allowNull: false, defaultValue: () => new Date().toISOString() },
 }, {
   tableName: 'games',
@@ -266,6 +269,63 @@ export const LoreVote = sequelize.define('LoreVote', {
   tableName: 'lore_votes',
   timestamps: false,
   indexes: [{ unique: true, fields: ['proposalId', 'userId'] }],
+})
+
+// --- Achievements (skill ranking) ---
+// Catalog is shared across everyone who owns a title (keyed by normalized title,
+// like lore maps). Pulled once from RAWG and cached. `weight` = 100 - percent, so
+// rare achievements (low global unlock %) are worth more — ranking is skill-based.
+export const Achievement = sequelize.define('Achievement', {
+  id: {
+    type: DataTypes.STRING,
+    primaryKey: true,
+    defaultValue: () => createId('ach'),
+  },
+  gameKey: { type: DataTypes.STRING, allowNull: false },
+  externalId: { type: DataTypes.STRING, allowNull: false },
+  name: { type: DataTypes.STRING, allowNull: false },
+  description: { type: DataTypes.STRING(1000), allowNull: false, defaultValue: '' },
+  image: { type: DataTypes.STRING, allowNull: false, defaultValue: '' },
+  percent: { type: DataTypes.FLOAT, allowNull: false, defaultValue: 0 },
+  weight: { type: DataTypes.FLOAT, allowNull: false, defaultValue: 0 },
+}, {
+  tableName: 'achievements',
+  timestamps: false,
+  indexes: [
+    { fields: ['gameKey'] },
+    { unique: true, fields: ['gameKey', 'externalId'] },
+  ],
+})
+
+// Records which catalog achievements a user has completed for a game.
+export const UserAchievement = sequelize.define('UserAchievement', {
+  id: {
+    type: DataTypes.STRING,
+    primaryKey: true,
+    defaultValue: () => createId('ua'),
+  },
+  userId: { type: DataTypes.STRING, allowNull: false },
+  gameKey: { type: DataTypes.STRING, allowNull: false },
+  achievementId: { type: DataTypes.STRING, allowNull: false },
+  unlockedAt: { type: DataTypes.STRING, allowNull: false, defaultValue: () => new Date().toISOString() },
+}, {
+  tableName: 'user_achievements',
+  timestamps: false,
+  indexes: [
+    { fields: ['userId'] },
+    { fields: ['gameKey'] },
+    { unique: true, fields: ['userId', 'achievementId'] },
+  ],
+})
+
+// Tracks whether the catalog for a title was already fetched from RAWG.
+export const AchievementMeta = sequelize.define('AchievementMeta', {
+  gameKey: { type: DataTypes.STRING, primaryKey: true },
+  rawgId: { type: DataTypes.STRING, allowNull: true },
+  fetchedAt: { type: DataTypes.STRING, allowNull: false, defaultValue: () => new Date().toISOString() },
+}, {
+  tableName: 'achievement_meta',
+  timestamps: false,
 })
 
 const recalcGameHours = async (gameId) => {

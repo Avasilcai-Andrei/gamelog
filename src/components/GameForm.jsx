@@ -65,6 +65,7 @@ export default function GameForm({ initial, onSave, onClose }) {
     hours: initial?.hours || 0,
     estimatedPlaytime: initial?.estimatedPlaytime || '',
     coverUrl: initial?.coverUrl || '',
+    rawgId: initial?.rawgId || '',
   })
   const [errors, setErrors] = useState({})
   const [hoveredStatus, setHoveredStatus] = useState(null)
@@ -123,6 +124,7 @@ export default function GameForm({ initial, onSave, onClose }) {
       coverUrl: game.background_image || '',
       genre: selectedGenre,
       estimatedPlaytime: playtime,
+      rawgId: String(game.id || ''),
     }))
     setErrors(prev => ({ ...prev, title: '', genre: '' }))
   }
@@ -135,10 +137,12 @@ export default function GameForm({ initial, onSave, onClose }) {
   const handleSave = () => {
     const e = validateGame(form)
     if (Object.keys(e).length > 0) { setErrors(e); return }
+    const { rawgId, ...rest } = form
     onSave({
-      ...form,
+      ...rest,
       hours: Number(form.hours) || 0,
       estimatedPlaytime: Number(form.estimatedPlaytime) || 0,
+      ...(rawgId ? { rawgId: String(rawgId) } : {}),
     })
   }
 

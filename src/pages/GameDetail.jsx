@@ -1,29 +1,40 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useGames } from '../context/GameContext'
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, Trophy } from 'lucide-react'
 import { validateSession } from '../utils/validators'
+import AchievementChecklist from '../components/AchievementChecklist'
 
 const PAGE_SIZE = 3
 
-function SessionForm({ initial, onSave, onClose }) {
+function SessionForm({ initial, catalog, initialSelected, onSave, onClose }) {
   const [form, setForm] = useState({
     date: initial?.date || new Date().toISOString().slice(0, 10),
     duration: initial?.duration || '',
     notes: initial?.notes || '',
   })
   const [errors, setErrors] = useState({})
+  const [showAch, setShowAch] = useState(false)
+  // Seed with the user's already-unlocked set so saving the session merges
+  // (rather than wipes) their achievements.
+  const [selected, setSelected] = useState(() => new Set(initialSelected || []))
 
   const update = (field, value) => {
     setForm(prev => ({ ...prev, [field]: value }))
     setErrors(prev => ({ ...prev, [field]: '' }))
   }
 
+  const toggle = (id) => setSelected(prev => {
+    const next = new Set(prev)
+    next.has(id) ? next.delete(id) : next.add(id)
+    return next
+  })
+
   const handleSave = () => {
     const e = validateSession(form)
     if (Object.keys(e).length > 0) { setErrors(e); return }
-    onSave({ ...form, duration: Number(form.duration) })
+    onSave({ ...form, duration: Number(form.duration) }, [...selected])
   }
 
   return (
@@ -65,6 +76,21 @@ function SessionForm({ initial, onSave, onClose }) {
           {errors.notes && <div className="form-error">{errors.notes}</div>}
         </div>
 
+        {catalog.length > 0 && (
+          <div className="form-group">
+            <button type="button" className="btn btn-ghost btn-sm ach-toggle-btn"
+              onClick={() => setShowAch(s => !s)}>
+              <Trophy size={14} /> Achievements unlocked ({selected.size}/{catalog.length})
+              <span className="ach-toggle-caret">{showAch ? '▲' : '▼'}</span>
+            </button>
+            {showAch && (
+              <div className="ach-modal-list">
+                <AchievementChecklist catalog={catalog} selected={selected} onToggle={toggle} />
+              </div>
+            )}
+          </div>
+        )}
+
         <div className="modal-actions">
           <button className="btn btn-ghost" onClick={onClose}>Cancel</button>
           <button className="btn btn-primary" onClick={handleSave}>
@@ -94,15 +120,41 @@ export default function GameDetail() {
   const { id } = useParams()
   const navigate = useNavigate()
   const { currentUser } = useAuth()
-  const { getGameById, getSessionsByGame, addSession, updateSession, deleteSession } = useGames()
+  const {
+    getGameById, getSessionsByGame, addSession, updateSession, deleteSession,
+    getAchievementCatalog, getMyAchievements, setMyAchievements,
+  } = useGames()
 
   const [page, setPage] = useState(1)
   const [showForm, setShowForm] = useState(false)
   const [editSession, setEditSession] = useState(null)
   const [deleteConfirm, setDeleteConfirm] = useState(null)
 
+  // Achievement state, loaded once we know the game.
+  const [catalog, setCatalog] = useState([])
+  const [unlocked, setUnlocked] = useState(new Set())
+  const [panelSelected, setPanelSelected] = useState(new Set())
+  const [savingAch, setSavingAch] = useState(false)
+  const [achDirty, setAchDirty] = useState(false)
+
   const game = getGameById(id)
-  const sessions = getSessionsByGame(id)
+
+  useEffect(() => {
+    if (!game) return
+    let active = true
+    Promise.all([
+      getAchievementCatalog(game.title, game.rawgId),
+      getMyAchievements(game.title),
+    ]).then(([cat, mine]) => {
+      if (!active) return
+      setCatalog(cat)
+      const set = new Set(mine)
+      setUnlocked(set)
+      setPanelSelected(new Set(set))
+    })
+    return () => { active = false }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [game?.id, game?.title, game?.rawgId])
 
   if (!game) return (
     <div className="page">
@@ -110,11 +162,31 @@ export default function GameDetail() {
     </div>
   )
 
+  const sessions = getSessionsByGame(id)
   const totalPages = Math.max(1, Math.ceil(sessions.length / PAGE_SIZE))
   const paginated = sessions.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE)
 
-  const handleAdd = (data) => {
+  const skillScore = catalog
+    .filter(a => unlocked.has(a.id))
+    .reduce((sum, a) => sum + a.weight, 0)
+  const maxScore = catalog.reduce((sum, a) => sum + a.weight, 0)
+
+  const persistAchievements = async (ids) => {
+    setSavingAch(true)
+    try {
+      const saved = await setMyAchievements(game.title, ids)
+      const set = new Set(saved)
+      setUnlocked(set)
+      setPanelSelected(new Set(set))
+      setAchDirty(false)
+    } finally {
+      setSavingAch(false)
+    }
+  }
+
+  const handleAdd = (data, achievementIds) => {
     addSession(currentUser.id, id, data)
+    if (achievementIds) persistAchievements(achievementIds)
     setShowForm(false)
     setPage(1)
   }
@@ -127,6 +199,15 @@ export default function GameDetail() {
   const handleDelete = (sessionId) => {
     deleteSession(sessionId)
     setDeleteConfirm(null)
+  }
+
+  const togglePanel = (achId) => {
+    setPanelSelected(prev => {
+      const next = new Set(prev)
+      next.has(achId) ? next.delete(achId) : next.add(achId)
+      return next
+    })
+    setAchDirty(true)
   }
 
   return (
@@ -163,6 +244,16 @@ export default function GameDetail() {
               {game.status}
             </span>
           </div>
+
+          {catalog.length > 0 && (
+            <div className="detail-stat-card ach-score-card">
+              <div className="detail-stat-label"><Trophy size={13} /> Skill Score</div>
+              <div className="detail-stat-value">
+                {Math.round(skillScore)}<span className="ach-score-max"> / {Math.round(maxScore)}</span>
+              </div>
+              <div className="ach-score-sub">{unlocked.size}/{catalog.length} achievements</div>
+            </div>
+          )}
         </div>
 
         <div className="detail-right">
@@ -208,11 +299,51 @@ export default function GameDetail() {
           >
             + Add Session
           </button>
+
+          {/* Standalone achievements panel — for marking what you've completed
+              without logging a session. */}
+          {catalog.length > 0 && (
+            <div className="ach-panel">
+              <div className="detail-session-header ach-panel-header">
+                <span><Trophy size={16} /> Achievements</span>
+                <button
+                  className="btn btn-primary btn-sm"
+                  disabled={!achDirty || savingAch}
+                  onClick={() => persistAchievements([...panelSelected])}
+                >
+                  {savingAch ? 'Saving…' : 'Save achievements'}
+                </button>
+              </div>
+              <p className="ach-panel-hint">
+                Tick everything you've completed — rarer achievements are worth more skill points.
+              </p>
+              <AchievementChecklist
+                catalog={catalog}
+                selected={panelSelected}
+                onToggle={togglePanel}
+              />
+            </div>
+          )}
         </div>
       </div>
 
-      {showForm && <SessionForm onSave={handleAdd} onClose={() => setShowForm(false)} />}
-      {editSession && <SessionForm initial={editSession} onSave={handleEdit} onClose={() => setEditSession(null)} />}
+      {showForm && (
+        <SessionForm
+          catalog={catalog}
+          initialSelected={[...unlocked]}
+          onSave={handleAdd}
+          onClose={() => setShowForm(false)}
+        />
+      )}
+      {editSession && (
+        <SessionForm
+          initial={editSession}
+          catalog={[]}
+          initialSelected={[]}
+          onSave={handleEdit}
+          onClose={() => setEditSession(null)}
+        />
+      )}
 
       {deleteConfirm && (
         <div className="modal-overlay" onClick={() => setDeleteConfirm(null)}>

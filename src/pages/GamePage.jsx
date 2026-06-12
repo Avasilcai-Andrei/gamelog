@@ -1,16 +1,26 @@
+import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useGames } from '../context/GameContext'
 import { useAuth } from '../context/AuthContext'
-import { ChevronLeft, Clock, CheckCircle, Gamepad2, Network } from 'lucide-react'
+import { ChevronLeft, Clock, CheckCircle, Gamepad2, Network, Trophy } from 'lucide-react'
 
 export default function GamePage() {
   const { title } = useParams()
   const navigate = useNavigate()
-  const { games } = useGames()
+  const { games, getAchievementRanking } = useGames()
   const { getUsers, currentUser } = useAuth()
 
   const decodedTitle = decodeURIComponent(title)
   const users = getUsers()
+
+  const [ranking, setRanking] = useState({ totalCount: 0, maxScore: 0, rankings: [] })
+
+  useEffect(() => {
+    let active = true
+    getAchievementRanking(decodedTitle).then(r => { if (active) setRanking(r) })
+    return () => { active = false }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [decodedTitle])
 
   const entries = games.filter(g =>
     g.title.toLowerCase().trim() === decodedTitle.toLowerCase().trim()
@@ -37,7 +47,15 @@ export default function GamePage() {
     return userId
   }
 
-  const ranked = [...entries].sort((a, b) => b.hours - a.hours)
+  // Skill-based ranking: order players by achievement score (Σ rarity weights),
+  // not hours. Ties / players with no achievements fall back to hours.
+  const scoreByUser = new Map(ranking.rankings.map(r => [r.userId, r]))
+  const ranked = [...entries].sort((a, b) => {
+    const sa = scoreByUser.get(a.userId)?.score || 0
+    const sb = scoreByUser.get(b.userId)?.score || 0
+    if (sb !== sa) return sb - sa
+    return (b.hours || 0) - (a.hours || 0)
+  })
 
   const totalPlayers = entries.length
   const totalHours = entries.reduce((sum, e) => sum + (e.hours || 0), 0)
@@ -102,26 +120,31 @@ export default function GamePage() {
         </div>
       </div>
 
-      <h2 className="gamepage-subtitle">Player Rankings</h2>
+      <h2 className="gamepage-subtitle">
+        <Trophy size={18} /> Skill Rankings
+        <span className="gamepage-subtitle-note">ranked by achievement difficulty, not hours</span>
+      </h2>
       <div className="card gamepage-table-card">
         <table className="table">
           <thead>
             <tr>
               <th className="col-cover">#</th>
               <th>Player</th>
+              <th>Skill Score</th>
+              <th>Achievements</th>
               <th>Status</th>
-              <th>Hours Played</th>
-              <th>Est. Playtime</th>
-              <th>Completion</th>
+              <th>Hours</th>
             </tr>
           </thead>
           <tbody>
             {ranked.map((entry, i) => {
               const username = getUserName(entry.userId)
               const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1
-              const pct = entry.estimatedPlaytime > 0
-                ? Math.min(100, Math.round((entry.hours / entry.estimatedPlaytime) * 100))
-                : null
+              const stat = scoreByUser.get(entry.userId)
+              const score = stat?.score || 0
+              const pct = ranking.totalCount > 0
+                ? Math.round(((stat?.unlockedCount || 0) / ranking.totalCount) * 100)
+                : 0
               return (
                 <tr key={entry.userId + entry.id}
                   className="clickable-row"
@@ -135,25 +158,28 @@ export default function GamePage() {
                       <span className="text-strong">{username}</span>
                     </div>
                   </td>
+                  <td data-label="Skill Score">
+                    <span className="gamepage-score">{Math.round(score)}</span>
+                    {ranking.maxScore > 0 && (
+                      <span className="text-secondary"> / {Math.round(ranking.maxScore)}</span>
+                    )}
+                  </td>
+                  <td data-label="Achievements">
+                    {ranking.totalCount > 0 ? (
+                      <div className="gamepage-progress-row">
+                        <div className="gamepage-progress-track">
+                          <div className="gamepage-progress-fill" style={{ width: `${pct}%` }} />
+                        </div>
+                        <span className="text-secondary">{stat?.unlockedCount || 0}/{ranking.totalCount}</span>
+                      </div>
+                    ) : '—'}
+                  </td>
                   <td data-label="Status">
                     <span className={`status-badge status-${entry.status} text-capitalize`}>
                       {entry.status}
                     </span>
                   </td>
-                  <td data-label="Hours Played">{entry.hours}h</td>
-                  <td className="text-secondary" data-label="Est. Playtime">
-                    {entry.estimatedPlaytime ? `${entry.estimatedPlaytime}h` : '—'}
-                  </td>
-                  <td data-label="Completion">
-                    {pct !== null ? (
-                      <div className="gamepage-progress-row">
-                        <div className="gamepage-progress-track">
-                          <div className="gamepage-progress-fill" style={{ width: `${pct}%` }} />
-                        </div>
-                        <span className="text-secondary">{pct}%</span>
-                      </div>
-                    ) : '—'}
-                  </td>
+                  <td className="text-secondary" data-label="Hours">{entry.hours}h</td>
                 </tr>
               )
             })}

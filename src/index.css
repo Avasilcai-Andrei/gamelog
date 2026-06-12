@@ -1999,3 +1999,86 @@ html, body, #root {
   .lore-proposal-row { flex-direction: column; align-items: stretch; }
   .lore-proposal-side { align-items: flex-start; }
 }
+
+/* ===== Achievements / skill ranking ===== */
+.ach-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 420px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+.ach-modal-list { max-height: 240px; overflow-y: auto; margin-top: 8px; }
+
+.ach-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-card);
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+}
+.ach-row:hover { background: var(--bg-card-hover); }
+.ach-row-checked { border-color: var(--accent-green); background: rgba(76,175,80,0.08); }
+
+.ach-checkbox { width: 16px; height: 16px; accent-color: var(--accent-green); flex-shrink: 0; }
+.ach-icon { width: 34px; height: 34px; border-radius: 6px; object-fit: cover; flex-shrink: 0; }
+
+.ach-body { flex: 1; min-width: 0; }
+.ach-name { font-size: 13px; font-weight: 600; color: var(--text-primary); }
+.ach-desc {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.ach-side { display: flex; flex-direction: column; align-items: flex-end; gap: 3px; flex-shrink: 0; }
+.ach-rarity { font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 10px; }
+.ach-rarity-legendary { color: var(--accent-orange); background: rgba(255,152,0,0.16); }
+.ach-rarity-rare      { color: var(--accent-purple); background: rgba(156,39,176,0.16); }
+.ach-rarity-uncommon  { color: var(--accent-blue);   background: rgba(74,144,217,0.16); }
+.ach-rarity-common    { color: var(--text-secondary); background: rgba(160,174,192,0.12); }
+.ach-weight { font-size: 11px; font-weight: 700; color: var(--accent-green); }
+
+.ach-empty { font-size: 12px; color: var(--text-muted); padding: 12px 0; }
+
+.ach-toggle-btn { display: inline-flex; align-items: center; gap: 6px; }
+.ach-toggle-caret { font-size: 9px; margin-left: 4px; }
+
+.ach-score-card { text-align: left; }
+.ach-score-card .detail-stat-label { display: inline-flex; align-items: center; gap: 5px; }
+.ach-score-max { color: var(--text-muted); font-size: 0.7em; font-weight: 600; }
+.ach-score-sub { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+
+.ach-panel { margin-top: 24px; }
+.ach-panel-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.ach-panel-header span { display: inline-flex; align-items: center; gap: 6px; }
+.ach-panel-hint { font-size: 12px; color: var(--text-secondary); margin: 6px 0 12px; }
+
+.gamepage-subtitle-note {
+  font-size: 12px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  margin-left: 10px;
+}
+.gamepage-subtitle { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.gamepage-score { font-weight: 700; color: var(--accent-orange); }
+
+.gamelist-top {
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--accent-orange);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
