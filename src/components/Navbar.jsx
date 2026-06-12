@@ -32,6 +32,7 @@ export default function Navbar() {
   const tabs = [
     { to: '/library', label: 'MyLibrary' },
     { to: '/gamelist', label: 'GameList' },
+    { to: '/leaderboard', label: 'Leaderboard' },
     { to: '/stats', label: 'Stats' },
     { to: '/chat', label: 'Chat' },
     ...(isAdmin ? [{ to: '/admin', label: 'Admin' }] : []),

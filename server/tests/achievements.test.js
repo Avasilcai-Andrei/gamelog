@@ -5,7 +5,9 @@ import { initDatabase, resetDatabase, ROLE_PERMISSIONS, PERMISSION_NAMES } from 
 import { signToken } from '../src/utils/jwt.js'
 import {
   getCatalog, setUserAchievements, getUserAchievements, getRanking,
+  getGlobalRating, getUserRating,
 } from '../src/services/achievementService.js'
+import { User } from '../src/db/index.js'
 
 const app = createApp(() => {})
 
@@ -91,6 +93,29 @@ describe('achievementService — user completions & ranking', () => {
     expect(ranking.rankings[0].userId).toBe('skilled')
     expect(ranking.rankings[0].score).toBe(98)
     expect(ranking.rankings[1].userId).toBe('casual')
+  })
+})
+
+describe('global Vauntd Rating', () => {
+  it('sums achievement weights across games and ranks users with usernames', async () => {
+    const catalog = await getCatalog(KEY, '999')
+    const hard = catalog.find(a => a.name === 'No-Hit Run')   // weight 98
+    const easy = catalog.find(a => a.name === 'First Steps')  // weight 10
+
+    await User.create({ id: 'pro', username: 'ProGamer', email: 'pro@test.local' })
+    await User.create({ id: 'cas', username: 'Casual', email: 'cas@test.local' })
+
+    await setUserAchievements(KEY, 'pro', [hard.id, easy.id]) // 108
+    await setUserAchievements(KEY, 'cas', [easy.id])          // 10
+
+    const board = await getGlobalRating()
+    expect(board[0]).toMatchObject({ userId: 'pro', username: 'ProGamer', rating: 108, achievementsEarned: 2, gamesRanked: 1 })
+    expect(board[1]).toMatchObject({ userId: 'cas', rating: 10 })
+
+    const proRating = await getUserRating('pro')
+    expect(proRating).toMatchObject({ rating: 108, rank: 1, total: 2 })
+    const unranked = await getUserRating('nobody')
+    expect(unranked).toMatchObject({ rating: 0, rank: null })
   })
 })
 

@@ -4,6 +4,8 @@ import {
   getUserAchievements,
   setUserAchievements,
   getRanking,
+  getGlobalRating,
+  getUserRating,
 } from '../services/achievementService.js'
 
 const normalizeKey = (raw) => decodeURIComponent(raw || '').trim().toLowerCase()
@@ -14,6 +16,24 @@ const requireUser = (req, res) => {
     return false
   }
   return true
+}
+
+export const getLeaderboard = async (req, res, next) => {
+  try {
+    const board = await getGlobalRating()
+    return res.json({ items: board.map((row, i) => ({ rank: i + 1, ...row })) })
+  } catch (err) {
+    return next(err)
+  }
+}
+
+export const getRating = async (req, res, next) => {
+  try {
+    const rating = await getUserRating(req.params.userId)
+    return res.json(rating)
+  } catch (err) {
+    return next(err)
+  }
 }
 
 export const getAchievements = async (req, res, next) => {

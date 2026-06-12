@@ -2184,3 +2184,28 @@ html, body, #root {
 .wrapped-feat-sub { font-size: 12px; color: var(--text-secondary); }
 
 .wrapped-footer { text-align: center; font-size: 12px; color: var(--text-muted); margin-top: 18px; font-weight: 600; }
+
+/* ===== Global leaderboard / Vauntd Rating ===== */
+.leaderboard-rating { font-weight: 800; font-size: 16px; color: var(--accent-orange); }
+.leaderboard-tier { font-weight: 700; font-size: 13px; }
+.leaderboard-me { background: rgba(74,144,217,0.10); }
+.leaderboard-me:hover td { background: rgba(74,144,217,0.16) !important; }
+
+.profile-rating-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+  border-radius: 14px;
+  cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.08);
+  background:
+    radial-gradient(circle at 90% 10%, rgba(255,152,0,0.18), transparent 50%),
+    linear-gradient(135deg, rgba(74,144,217,0.16), rgba(255,152,0,0.10));
+  transition: filter 0.15s;
+}
+.profile-rating-card:hover { filter: brightness(1.08); }
+.profile-rating-value { font-size: 32px; font-weight: 800; letter-spacing: -1px; line-height: 1; }
+.profile-rating-rank { margin-left: auto; text-align: right; }
+.profile-rating-rankbig { display: block; font-size: 24px; font-weight: 800; color: var(--accent-blue); }

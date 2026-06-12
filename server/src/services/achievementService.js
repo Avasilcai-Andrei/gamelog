@@ -1,5 +1,5 @@
 import { Op } from 'sequelize'
-import { Achievement, UserAchievement, AchievementMeta, Game } from '../db/index.js'
+import { Achievement, UserAchievement, AchievementMeta, Game, User } from '../db/index.js'
 
 const toPlain = (instance) => (instance ? instance.get({ plain: true }) : instance)
 
@@ -102,6 +102,50 @@ export const setUserAchievements = async (gameKey, userId, achievementIds) => {
     )
   }
   return target
+}
+
+// Global Vauntd Rating: each user's rating = Σ weight of every achievement they
+// have unlocked across all games (breadth × difficulty). Returns a ranked board
+// with usernames joined in. Aggregated in JS so it stays dialect-agnostic.
+export const getGlobalRating = async () => {
+  const [unlocks, catalog, users] = await Promise.all([
+    UserAchievement.findAll({ attributes: ['userId', 'achievementId', 'gameKey'] }),
+    Achievement.findAll({ attributes: ['id', 'weight'] }),
+    User.findAll({ attributes: ['id', 'username'] }),
+  ])
+  const weightById = new Map(catalog.map(a => [a.id, a.weight]))
+  const nameById = new Map(users.map(u => [u.id, u.username]))
+
+  const byUser = new Map()
+  for (const u of unlocks) {
+    const w = weightById.get(u.achievementId)
+    if (w === undefined) continue
+    const entry = byUser.get(u.userId) || { userId: u.userId, rating: 0, achievementsEarned: 0, games: new Set() }
+    entry.rating += w
+    entry.achievementsEarned += 1
+    entry.games.add(u.gameKey)
+    byUser.set(u.userId, entry)
+  }
+
+  return [...byUser.values()]
+    .map(e => ({
+      userId: e.userId,
+      username: nameById.get(e.userId) || e.userId,
+      rating: Math.round(e.rating),
+      achievementsEarned: e.achievementsEarned,
+      gamesRanked: e.games.size,
+    }))
+    .sort((a, b) => b.rating - a.rating || b.achievementsEarned - a.achievementsEarned)
+}
+
+// A single user's rating and global rank (1-based), e.g. "#3 of 50".
+export const getUserRating = async (userId) => {
+  const board = await getGlobalRating()
+  const idx = board.findIndex(r => r.userId === userId)
+  if (idx === -1) {
+    return { userId, rating: 0, rank: null, total: board.length, achievementsEarned: 0, gamesRanked: 0 }
+  }
+  return { ...board[idx], rank: idx + 1, total: board.length }
 }
 
 // Skill ranking for a game: each user's score = Σ weight of unlocked achievements.

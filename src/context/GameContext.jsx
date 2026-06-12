@@ -376,6 +376,15 @@ export function GameProvider({ children }) {
     request(`/achievements/${encodeURIComponent(title)}/ranking`, { headers: { ...authHeaders } })
       .catch(() => ({ totalCount: 0, maxScore: 0, rankings: [] }))
 
+  const getGlobalLeaderboard = () =>
+    request('/achievements/leaderboard', { headers: { ...authHeaders } })
+      .then(r => r.items)
+      .catch(() => [])
+
+  const getUserRating = (userId) =>
+    request(`/achievements/rating/${encodeURIComponent(userId)}`, { headers: { ...authHeaders } })
+      .catch(() => ({ rating: 0, rank: null, total: 0, achievementsEarned: 0, gamesRanked: 0 }))
+
   const getLeaderboard = () => {
     const allUserIds = [...new Set(games.map(g => g.userId))]
     return allUserIds
@@ -406,6 +415,8 @@ export function GameProvider({ children }) {
     getMyAchievements,
     setMyAchievements,
     getAchievementRanking,
+    getGlobalLeaderboard,
+    getUserRating,
     refreshFromServer: hydrateAll,
     forceSync: async () => {
       setSyncing(true)

@@ -10,6 +10,7 @@ import Library from './pages/Library'
 import GameDetail from './pages/GameDetail'
 import Stats from './pages/Stats'
 import GameList from './pages/GameList'
+import Leaderboard from './pages/Leaderboard'
 import PlayerProfile from './pages/PlayerProfile'
 import GamePage from './pages/GamePage'
 import LoreMap from './pages/LoreMap'
@@ -59,6 +60,9 @@ function AppRoutes() {
         } />
         <Route path="/gamelist" element={
           <PrivateRoute><GameList /></PrivateRoute>
+        } />
+        <Route path="/leaderboard" element={
+          <PrivateRoute><Leaderboard /></PrivateRoute>
         } />
         <Route path="/player/:userId" element={
           <PrivateRoute><PlayerProfile /></PrivateRoute>

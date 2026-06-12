@@ -1,12 +1,13 @@
+import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useGames } from '../context/GameContext'
 import { useAuth } from '../context/AuthContext'
-import { ChevronLeft, Clock, Gamepad2, CheckCircle } from 'lucide-react'
+import { ChevronLeft, Clock, Gamepad2, CheckCircle, Trophy } from 'lucide-react'
 
 export default function PlayerProfile() {
   const { userId } = useParams()
   const navigate = useNavigate()
-  const { getGamesByUser, getStatsByUser } = useGames()
+  const { getGamesByUser, getStatsByUser, getUserRating } = useGames()
   const { getUsers, currentUser } = useAuth()
 
   const users = getUsers()
@@ -15,6 +16,14 @@ export default function PlayerProfile() {
 
   const games = getGamesByUser(userId)
   const stats = getStatsByUser(userId)
+
+  const [rating, setRating] = useState(null)
+  useEffect(() => {
+    let active = true
+    getUserRating(userId).then(r => { if (active) setRating(r) })
+    return () => { active = false }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userId])
 
   const isOwnProfile = userId === currentUser?.id
 
@@ -39,6 +48,22 @@ export default function PlayerProfile() {
           )}
         </div>
       </div>
+
+      {rating && rating.rating > 0 && (
+        <div className="profile-rating-card" onClick={() => navigate('/leaderboard')}>
+          <Trophy size={26} color="var(--accent-orange)" />
+          <div>
+            <div className="stat-card-label">Vauntd Rating</div>
+            <div className="profile-rating-value">{rating.rating}</div>
+          </div>
+          {rating.rank && (
+            <div className="profile-rating-rank">
+              <span className="profile-rating-rankbig">#{rating.rank}</span>
+              <span className="stat-card-label">of {rating.total}</span>
+            </div>
+          )}
+        </div>
+      )}
 
       <div className="stat-cards" style={{ marginBottom: 28 }}>
         <div className="stat-card">
