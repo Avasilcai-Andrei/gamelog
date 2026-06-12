@@ -348,6 +348,30 @@ export const AchievementMeta = sequelize.define('AchievementMeta', {
   timestamps: false,
 })
 
+// Time-boxed community challenge. Scored from achievements unlocked within the
+// [startsAt, endsAt] window. `kind` is a plain STRING (validated by Zod) so the
+// rule set can grow without an enum migration.
+//   - rarity_under: count achievements unlocked in window with percent < threshold
+//   - count_any:    count any achievements unlocked in window (threshold = goal)
+export const Challenge = sequelize.define('Challenge', {
+  id: {
+    type: DataTypes.STRING,
+    primaryKey: true,
+    defaultValue: () => createId('ch'),
+  },
+  title: { type: DataTypes.STRING, allowNull: false },
+  description: { type: DataTypes.STRING(500), allowNull: false, defaultValue: '' },
+  kind: { type: DataTypes.STRING, allowNull: false, defaultValue: 'rarity_under' },
+  threshold: { type: DataTypes.INTEGER, allowNull: false, defaultValue: 10 },
+  startsAt: { type: DataTypes.STRING, allowNull: false },
+  endsAt: { type: DataTypes.STRING, allowNull: false },
+  createdBy: { type: DataTypes.STRING, allowNull: false, defaultValue: 'system' },
+}, {
+  tableName: 'challenges',
+  timestamps: false,
+  indexes: [{ fields: ['endsAt'] }],
+})
+
 const recalcGameHours = async (gameId) => {
   const sessions = await Session.findAll({ where: { gameId }, attributes: ['duration'] })
   const totalMins = sessions.reduce((sum, s) => sum + (Number(s.duration) || 0), 0)
@@ -554,6 +578,26 @@ export const seedDatabase = async () => {
   for (const g of seedGames) await recalcGameHours(g.id)
 }
 
+// Ensure there's always an active weekly challenge for the demo. Creates a fresh
+// 7-day "Rarity Rush" only if none is currently live, so restarts naturally rotate.
+const seedDefaultChallenge = async () => {
+  const now = new Date().toISOString()
+  const all = await Challenge.findAll()
+  const active = all.find(c => c.startsAt <= now && c.endsAt >= now)
+  if (active) return
+  const start = new Date()
+  const end = new Date(start.getTime() + 7 * 24 * 60 * 60 * 1000)
+  await Challenge.create({
+    title: 'Rarity Rush',
+    description: 'Earn achievements that fewer than 10% of players have. The rarer the feat, the bigger the flex.',
+    kind: 'rarity_under',
+    threshold: 10,
+    startsAt: start.toISOString(),
+    endsAt: end.toISOString(),
+    createdBy: 'system',
+  })
+}
+
 export const initDatabase = async ({ force = false } = {}) => {
   if (force) {
     await sequelize.sync({ force: true })
@@ -571,6 +615,7 @@ export const initDatabase = async ({ force = false } = {}) => {
   await seedDefaultUser()
   const count = await Game.count()
   if (count === 0) await seedDatabase()
+  await seedDefaultChallenge()
 }
 
 export const resetDatabase = async () => {
@@ -579,6 +624,7 @@ export const resetDatabase = async () => {
   await seedAdminUser()
   await seedDefaultUser()
   await seedDatabase()
+  await seedDefaultChallenge()
 }
 
 export { createId, recalcGameHours }

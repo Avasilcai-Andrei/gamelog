@@ -87,6 +87,14 @@ export const userAchievementsSchema = z.object({
   achievementIds: z.array(z.string().min(1)).default([]),
 })
 
+export const challengeCreateSchema = z.object({
+  title: z.string().trim().min(1).max(120),
+  description: z.string().trim().max(500).default(''),
+  kind: z.enum(['rarity_under', 'count_any']),
+  threshold: z.coerce.number().int().min(1).max(100),
+  durationDays: z.coerce.number().int().min(1).max(60).default(7),
+})
+
 export const loreProposalSchema = z.object({
   kind: z.enum(['add', 'edit', 'delete']),
   targetNodeId: z.string().min(1).optional(),

@@ -402,6 +402,16 @@ export function GameProvider({ children }) {
       headers: { ...authHeaders },
     }).then(r => r.items)
 
+  const getCurrentChallenge = () =>
+    request('/challenges/current', { headers: { ...authHeaders } })
+      .catch(() => ({ challenge: null }))
+
+  const createChallenge = (data) =>
+    request('/challenges', { method: 'POST', body: JSON.stringify(data), headers: { ...authHeaders } })
+
+  const deleteChallenge = (id) =>
+    request(`/challenges/${id}`, { method: 'DELETE', headers: { ...authHeaders } })
+
   const getLeaderboard = () => {
     const allUserIds = [...new Set(games.map(g => g.userId))]
     return allUserIds
@@ -437,6 +447,9 @@ export function GameProvider({ children }) {
     getTrophies,
     getEarnedAchievements,
     setTrophies,
+    getCurrentChallenge,
+    createChallenge,
+    deleteChallenge,
     refreshFromServer: hydrateAll,
     forceSync: async () => {
       setSyncing(true)

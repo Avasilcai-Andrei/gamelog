@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useGames } from '../context/GameContext'
 import { useAuth } from '../context/AuthContext'
 import { Trophy } from 'lucide-react'
+import ChallengeCard from '../components/ChallengeCard'
 
 // Rating → tier label/flair, purely cosmetic.
 function tierOf(rating) {
@@ -36,6 +37,8 @@ export default function Leaderboard() {
         Vauntd Rating = the combined difficulty of every achievement you've earned, across all games.
         Skill, not hours.
       </p>
+
+      <ChallengeCard />
 
       {board === null ? (
         <div className="card" style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>

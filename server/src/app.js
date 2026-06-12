@@ -18,6 +18,7 @@ import dbInspectorRoutes from './routes/dbInspectorRoutes.js'
 import authRoutes from './routes/authRoutes.js'
 import loreRoutes from './routes/loreRoutes.js'
 import achievementRoutes from './routes/achievementRoutes.js'
+import challengeRoutes from './routes/challengeRoutes.js'
 import { schema, root, setBroadcast } from './graphql/schema.js'
 import { generatorStatus, startGenerator, stopGenerator } from './realtime/generator.js'
 import { resetDatabase } from './db/index.js'
@@ -53,6 +54,7 @@ export const createApp = (broadcast) => {
   app.use('/api', userRoutes)
   app.use('/api', loreRoutes)
   app.use('/api', achievementRoutes)
+  app.use('/api', challengeRoutes)
 
   app.get('/api/generator/status', (req, res) => {
     res.json(generatorStatus())
