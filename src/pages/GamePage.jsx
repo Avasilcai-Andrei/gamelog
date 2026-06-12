@@ -2,22 +2,32 @@ import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useGames } from '../context/GameContext'
 import { useAuth } from '../context/AuthContext'
-import { ChevronLeft, Clock, CheckCircle, Gamepad2, Network, Trophy } from 'lucide-react'
+import { ChevronLeft, Clock, CheckCircle, Gamepad2, Network, Trophy, TrendingUp } from 'lucide-react'
 
 export default function GamePage() {
   const { title } = useParams()
   const navigate = useNavigate()
-  const { games, getAchievementRanking } = useGames()
+  const { games, getAchievementRanking, getAchievementCatalog, getMyAchievements } = useGames()
   const { getUsers, currentUser } = useAuth()
 
   const decodedTitle = decodeURIComponent(title)
   const users = getUsers()
 
   const [ranking, setRanking] = useState({ totalCount: 0, maxScore: 0, rankings: [] })
+  const [catalog, setCatalog] = useState([])
+  const [myUnlocked, setMyUnlocked] = useState(new Set())
 
   useEffect(() => {
     let active = true
     getAchievementRanking(decodedTitle).then(r => { if (active) setRanking(r) })
+    Promise.all([
+      getAchievementCatalog(decodedTitle),
+      getMyAchievements(decodedTitle),
+    ]).then(([cat, mine]) => {
+      if (!active) return
+      setCatalog(cat)
+      setMyUnlocked(new Set(mine))
+    })
     return () => { active = false }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [decodedTitle])
@@ -56,6 +66,30 @@ export default function GamePage() {
     if (sb !== sa) return sb - sa
     return (b.hours || 0) - (a.hours || 0)
   })
+
+  // "Climb the ranking": for the viewer, find the player directly above them and
+  // the fewest top-value achievements that would close the gap.
+  const myId = currentUser?.id
+  const ownsGame = entries.some(e => e.userId === myId)
+  const sortedRanks = ranking.rankings
+  const myIdx = sortedRanks.findIndex(r => r.userId === myId)
+  const myScore = myIdx >= 0 ? sortedRanks[myIdx].score : 0
+  const rival = myIdx > 0
+    ? sortedRanks[myIdx - 1]
+    : (myIdx === -1 && sortedRanks.length > 0 ? sortedRanks[sortedRanks.length - 1] : null)
+  const gap = rival ? rival.score - myScore : 0
+  const unearned = catalog.filter(a => !myUnlocked.has(a.id)).sort((a, b) => b.weight - a.weight)
+
+  const chasePicks = []
+  let chaseAcc = 0
+  if (rival && gap > 0) {
+    for (const a of unearned) {
+      chasePicks.push(a)
+      chaseAcc += a.weight
+      if (chaseAcc > gap) break
+    }
+  }
+  const overtakes = chaseAcc > gap
 
   const totalPlayers = entries.length
   const totalHours = entries.reduce((sum, e) => sum + (e.hours || 0), 0)
@@ -119,6 +153,34 @@ export default function GamePage() {
           </div>
         </div>
       </div>
+
+      {ownsGame && catalog.length > 0 && (
+        <div className="climb-card">
+          <div className="climb-head"><TrendingUp size={16} /> Climb the ranking</div>
+          {unearned.length === 0 ? (
+            <div className="climb-msg">🏆 You've earned every achievement on this game. Untouchable.</div>
+          ) : myIdx === 0 ? (
+            <div className="climb-msg">👑 You're #1 here — defend your crown. Hardest one still open: <strong>{unearned[0].name}</strong> (+{unearned[0].weight}).</div>
+          ) : rival && overtakes ? (
+            <>
+              <div className="climb-msg">
+                Overtake <strong>{getUserName(rival.userId)}</strong> (you need <strong>+{Math.round(gap + 0.5)}</strong>) by earning:
+              </div>
+              <div className="climb-picks">
+                {chasePicks.map(a => (
+                  <div key={a.id} className="climb-pick">
+                    <span className="climb-pick-name">{a.name}</span>
+                    <span className="climb-pick-sub">{a.percent < 100 ? a.percent.toFixed(1) : 100}% have it</span>
+                    <span className="climb-pts">+{a.weight}</span>
+                  </div>
+                ))}
+              </div>
+            </>
+          ) : (
+            <div className="climb-msg">Earn more achievements to climb — every rare one moves you up.</div>
+          )}
+        </div>
+      )}
 
       <h2 className="gamepage-subtitle">
         <Trophy size={18} /> Skill Rankings

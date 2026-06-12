@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useGames } from '../context/GameContext'
-import { ChevronLeft, Trophy } from 'lucide-react'
+import { ChevronLeft, Trophy, Target } from 'lucide-react'
 import { validateSession } from '../utils/validators'
 import AchievementChecklist from '../components/AchievementChecklist'
 
@@ -171,6 +171,12 @@ export default function GameDetail() {
     .reduce((sum, a) => sum + a.weight, 0)
   const maxScore = catalog.reduce((sum, a) => sum + a.weight, 0)
 
+  // Highest-value achievements you haven't earned yet — your best skill upside.
+  const chase = catalog
+    .filter(a => !unlocked.has(a.id))
+    .sort((a, b) => b.weight - a.weight)
+    .slice(0, 3)
+
   const persistAchievements = async (ids) => {
     setSavingAch(true)
     try {
@@ -299,6 +305,21 @@ export default function GameDetail() {
           >
             + Add Session
           </button>
+
+          {chase.length > 0 && (
+            <div className="chase-card">
+              <div className="chase-head"><Target size={15} /> Next feats to chase</div>
+              {chase.map(a => (
+                <div key={a.id} className="chase-row">
+                  <div className="chase-info">
+                    <div className="chase-name">{a.name}</div>
+                    <div className="chase-sub">only {a.percent < 100 ? a.percent.toFixed(1) : 100}% of players have it</div>
+                  </div>
+                  <span className="chase-pts">+{a.weight}</span>
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Standalone achievements panel — for marking what you've completed
               without logging a session. */}
