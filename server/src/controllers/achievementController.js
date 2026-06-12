@@ -6,6 +6,9 @@ import {
   getRanking,
   getGlobalRating,
   getUserRating,
+  getEarnedAchievements,
+  getTrophies,
+  setTrophies,
 } from '../services/achievementService.js'
 
 const normalizeKey = (raw) => decodeURIComponent(raw || '').trim().toLowerCase()
@@ -31,6 +34,36 @@ export const getRating = async (req, res, next) => {
   try {
     const rating = await getUserRating(req.params.userId)
     return res.json(rating)
+  } catch (err) {
+    return next(err)
+  }
+}
+
+export const getEarned = async (req, res, next) => {
+  try {
+    const items = await getEarnedAchievements(req.params.userId)
+    return res.json({ items })
+  } catch (err) {
+    return next(err)
+  }
+}
+
+export const getTrophyCabinet = async (req, res, next) => {
+  try {
+    const items = await getTrophies(req.params.userId)
+    return res.json({ items })
+  } catch (err) {
+    return next(err)
+  }
+}
+
+export const putTrophies = async (req, res, next) => {
+  try {
+    if (!requireUser(req, res)) return undefined
+    const parsed = userAchievementsSchema.safeParse(req.body)
+    if (!parsed.success) return res.status(400).json({ error: parsed.error.flatten() })
+    const items = await setTrophies(req.user.id, parsed.data.achievementIds)
+    return res.json({ items })
   } catch (err) {
     return next(err)
   }

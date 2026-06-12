@@ -385,6 +385,23 @@ export function GameProvider({ children }) {
     request(`/achievements/rating/${encodeURIComponent(userId)}`, { headers: { ...authHeaders } })
       .catch(() => ({ rating: 0, rank: null, total: 0, achievementsEarned: 0, gamesRanked: 0 }))
 
+  const getTrophies = (userId) =>
+    request(`/achievements/${encodeURIComponent(userId)}/trophies`, { headers: { ...authHeaders } })
+      .then(r => r.items)
+      .catch(() => [])
+
+  const getEarnedAchievements = (userId) =>
+    request(`/achievements/${encodeURIComponent(userId)}/earned`, { headers: { ...authHeaders } })
+      .then(r => r.items)
+      .catch(() => [])
+
+  const setTrophies = (achievementIds) =>
+    request('/achievements/trophies', {
+      method: 'PUT',
+      body: JSON.stringify({ achievementIds }),
+      headers: { ...authHeaders },
+    }).then(r => r.items)
+
   const getLeaderboard = () => {
     const allUserIds = [...new Set(games.map(g => g.userId))]
     return allUserIds
@@ -417,6 +434,9 @@ export function GameProvider({ children }) {
     getAchievementRanking,
     getGlobalLeaderboard,
     getUserRating,
+    getTrophies,
+    getEarnedAchievements,
+    setTrophies,
     refreshFromServer: hydrateAll,
     forceSync: async () => {
       setSyncing(true)

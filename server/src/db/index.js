@@ -318,6 +318,26 @@ export const UserAchievement = sequelize.define('UserAchievement', {
   ],
 })
 
+// A user's "trophy cabinet": up to 5 earned achievements pinned to their profile.
+// Cap is enforced in the service. References a catalog achievement by id.
+export const TrophyPin = sequelize.define('TrophyPin', {
+  id: {
+    type: DataTypes.STRING,
+    primaryKey: true,
+    defaultValue: () => createId('tp'),
+  },
+  userId: { type: DataTypes.STRING, allowNull: false },
+  achievementId: { type: DataTypes.STRING, allowNull: false },
+  createdAt: { type: DataTypes.STRING, allowNull: false, defaultValue: () => new Date().toISOString() },
+}, {
+  tableName: 'trophy_pins',
+  timestamps: false,
+  indexes: [
+    { fields: ['userId'] },
+    { unique: true, fields: ['userId', 'achievementId'] },
+  ],
+})
+
 // Tracks whether the catalog for a title was already fetched from RAWG.
 export const AchievementMeta = sequelize.define('AchievementMeta', {
   gameKey: { type: DataTypes.STRING, primaryKey: true },

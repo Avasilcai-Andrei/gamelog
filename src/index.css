@@ -2209,3 +2209,40 @@ html, body, #root {
 .profile-rating-value { font-size: 32px; font-weight: 800; letter-spacing: -1px; line-height: 1; }
 .profile-rating-rank { margin-left: auto; text-align: right; }
 .profile-rating-rankbig { display: block; font-size: 24px; font-weight: 800; color: var(--accent-blue); }
+
+/* ===== Trophy cabinet ===== */
+.trophy-cabinet { margin-bottom: 28px; }
+.trophy-cabinet-head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+.trophy-cabinet-title { display: flex; align-items: center; gap: 7px; font-size: 16px; font-weight: 600; }
+.trophy-empty {
+  font-size: 13px; color: var(--text-secondary);
+  background: var(--bg-card); border: 1px dashed var(--border);
+  border-radius: 12px; padding: 18px; text-align: center;
+}
+
+.trophy-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.trophy-tile {
+  display: flex; align-items: center; gap: 11px;
+  background:
+    radial-gradient(circle at 100% 0%, rgba(255,152,0,0.12), transparent 60%),
+    var(--bg-card);
+  border: 1px solid var(--border); border-radius: 12px; padding: 11px 13px;
+}
+.trophy-img { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
+.trophy-img-ph { display: flex; align-items: center; justify-content: center; background: var(--bg-secondary); color: var(--accent-orange); }
+.trophy-body { flex: 1; min-width: 0; }
+.trophy-name { font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.trophy-game { font-size: 11px; color: var(--text-secondary); }
+
+.trophy-pick-count { font-size: 12px; color: var(--text-secondary); margin-bottom: 12px; }
+.trophy-pick-list { display: flex; flex-direction: column; gap: 6px; max-height: 360px; overflow-y: auto; padding-right: 4px; }
+.trophy-pick-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px;
+  background: var(--bg-card); cursor: pointer;
+}
+.trophy-pick-row:hover { background: var(--bg-card-hover); }
+.trophy-pick-checked { border-color: var(--accent-orange); background: rgba(255,152,0,0.08); }
+.trophy-pick-disabled { opacity: 0.45; cursor: not-allowed; }
+.trophy-pick-row input { width: 16px; height: 16px; accent-color: var(--accent-orange); flex-shrink: 0; }
+.trophy-pick-img { width: 32px; height: 32px; border-radius: 6px; object-fit: cover; flex-shrink: 0; }

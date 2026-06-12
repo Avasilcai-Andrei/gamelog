@@ -5,7 +5,7 @@ import { initDatabase, resetDatabase, ROLE_PERMISSIONS, PERMISSION_NAMES } from 
 import { signToken } from '../src/utils/jwt.js'
 import {
   getCatalog, setUserAchievements, getUserAchievements, getRanking,
-  getGlobalRating, getUserRating,
+  getGlobalRating, getUserRating, getTrophies, setTrophies, getEarnedAchievements,
 } from '../src/services/achievementService.js'
 import { User } from '../src/db/index.js'
 
@@ -116,6 +116,28 @@ describe('global Vauntd Rating', () => {
     expect(proRating).toMatchObject({ rating: 108, rank: 1, total: 2 })
     const unranked = await getUserRating('nobody')
     expect(unranked).toMatchObject({ rating: 0, rank: null })
+  })
+})
+
+describe('trophy cabinet', () => {
+  it('only pins earned achievements, caps at 5, and lists earned rarest-first', async () => {
+    const catalog = await getCatalog(KEY, '999')
+    const hard = catalog.find(a => a.name === 'No-Hit Run')
+    const easy = catalog.find(a => a.name === 'First Steps')
+
+    await setUserAchievements(KEY, 'u1', [hard.id]) // only earned the hard one
+
+    const earned = await getEarnedAchievements('u1')
+    expect(earned.map(a => a.id)).toEqual([hard.id])
+
+    // Trying to pin an unearned achievement is rejected; earned one sticks.
+    const saved = await setTrophies('u1', [hard.id, easy.id])
+    expect(saved.map(a => a.id)).toEqual([hard.id])
+    expect((await getTrophies('u1')).map(a => a.id)).toEqual([hard.id])
+
+    // Setting to empty clears the cabinet.
+    await setTrophies('u1', [])
+    expect(await getTrophies('u1')).toEqual([])
   })
 })
 

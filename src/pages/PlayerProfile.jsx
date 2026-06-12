@@ -3,6 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom'
 import { useGames } from '../context/GameContext'
 import { useAuth } from '../context/AuthContext'
 import { ChevronLeft, Clock, Gamepad2, CheckCircle, Trophy } from 'lucide-react'
+import TrophyCabinet from '../components/TrophyCabinet'
 
 export default function PlayerProfile() {
   const { userId } = useParams()
@@ -88,6 +89,8 @@ export default function PlayerProfile() {
           <CheckCircle size={28} color="var(--accent-blue)" />
         </div>
       </div>
+
+      <TrophyCabinet userId={userId} isOwn={isOwnProfile} />
 
       <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>Game Library</h2>
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>

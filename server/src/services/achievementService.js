@@ -1,5 +1,7 @@
 import { Op } from 'sequelize'
-import { Achievement, UserAchievement, AchievementMeta, Game, User } from '../db/index.js'
+import { Achievement, UserAchievement, AchievementMeta, Game, User, TrophyPin } from '../db/index.js'
+
+const MAX_TROPHIES = 5
 
 const toPlain = (instance) => (instance ? instance.get({ plain: true }) : instance)
 
@@ -102,6 +104,56 @@ export const setUserAchievements = async (gameKey, userId, achievementIds) => {
     )
   }
   return target
+}
+
+// --- Trophy cabinet ---
+
+// Every achievement a user has unlocked, with full catalog detail, rarest first.
+// Powers both the cabinet display and the "pick your trophies" editor.
+export const getEarnedAchievements = async (userId) => {
+  const unlocks = await UserAchievement.findAll({ where: { userId }, attributes: ['achievementId'] })
+  const ids = unlocks.map(u => u.achievementId)
+  if (ids.length === 0) return []
+  const rows = await Achievement.findAll({ where: { id: { [Op.in]: ids } }, order: [['weight', 'DESC']] })
+  return rows.map(toPlain)
+}
+
+export const getTrophies = async (userId) => {
+  const pins = await TrophyPin.findAll({ where: { userId }, attributes: ['achievementId'] })
+  const ids = pins.map(p => p.achievementId)
+  if (ids.length === 0) return []
+  const rows = await Achievement.findAll({ where: { id: { [Op.in]: ids } }, order: [['weight', 'DESC']] })
+  return rows.map(toPlain)
+}
+
+// Replace a user's pinned set. Only achievements they've actually earned are
+// accepted, and the cabinet is capped at MAX_TROPHIES (rarest kept on overflow).
+export const setTrophies = async (userId, achievementIds) => {
+  const requested = [...new Set(achievementIds)]
+  const earned = requested.length
+    ? await UserAchievement.findAll({
+        where: { userId, achievementId: { [Op.in]: requested } },
+        attributes: ['achievementId'],
+      })
+    : []
+  const earnedSet = new Set(earned.map(e => e.achievementId))
+  let valid = requested.filter(id => earnedSet.has(id))
+
+  // On overflow, keep the rarest (highest weight).
+  if (valid.length > MAX_TROPHIES) {
+    const weights = await Achievement.findAll({ where: { id: { [Op.in]: valid } }, attributes: ['id', 'weight'] })
+    const weightById = new Map(weights.map(a => [a.id, a.weight]))
+    valid = valid.sort((a, b) => (weightById.get(b) || 0) - (weightById.get(a) || 0)).slice(0, MAX_TROPHIES)
+  }
+
+  await TrophyPin.destroy({ where: { userId } })
+  if (valid.length) {
+    await TrophyPin.bulkCreate(
+      valid.map(achievementId => ({ userId, achievementId, createdAt: new Date().toISOString() })),
+      { ignoreDuplicates: true },
+    )
+  }
+  return getTrophies(userId)
 }
 
 // Global Vauntd Rating: each user's rating = Σ weight of every achievement they
