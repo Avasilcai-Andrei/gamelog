@@ -1,19 +1,72 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" fill="none">
   <defs>
-    <linearGradient id="vauntd-stroke" x1="14" y1="48" x2="52" y2="10" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#4a90d9"/>
+    <clipPath id="round"><rect width="64" height="64" rx="16"/></clipPath>
+
+    <!-- Base tile: same dark navy as the app background -->
+    <linearGradient id="tile" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#1a2144"/>
+      <stop offset="1" stop-color="#0b0e1c"/>
+    </linearGradient>
+
+    <!-- The app's two ambient glows: blue top-left, orange bottom-right -->
+    <radialGradient id="glowBlue" cx="0.22" cy="0.16" r="0.7">
+      <stop offset="0" stop-color="#4a90d9" stop-opacity="0.55"/>
+      <stop offset="1" stop-color="#4a90d9" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glowOrange" cx="0.84" cy="0.9" r="0.7">
+      <stop offset="0" stop-color="#ff9800" stop-opacity="0.42"/>
+      <stop offset="1" stop-color="#ff9800" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Top sheen for a glassy tile feel -->
+    <linearGradient id="sheen" x1="0" y1="0" x2="0" y2="34" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.10"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+
+    <!-- Mark gradient: blue → orange, matching the accent pair -->
+    <linearGradient id="stroke" x1="14" y1="48" x2="52" y2="8" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#5aa0e9"/>
+      <stop offset="0.5" stop-color="#9d7fd0"/>
       <stop offset="1" stop-color="#ff9800"/>
     </linearGradient>
-    <linearGradient id="vauntd-bg" x1="0" y1="0" x2="64" y2="64" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#1d2348"/>
-      <stop offset="1" stop-color="#0c0f1f"/>
-    </linearGradient>
+
+    <filter id="soft" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="2.4"/>
+    </filter>
   </defs>
-  <rect width="64" height="64" rx="15" fill="url(#vauntd-bg)"/>
-  <!-- "V" that doubles as a rising arrow: skill ascending + achievement earned -->
-  <path d="M15 18 L29 46 L51 9" stroke="url(#vauntd-stroke)" stroke-width="7.5"
-        stroke-linecap="round" stroke-linejoin="round"/>
-  <!-- arrowhead at the top of the rising arm -->
-  <path d="M41 10 L51 9 L50 20" stroke="url(#vauntd-stroke)" stroke-width="7.5"
-        stroke-linecap="round" stroke-linejoin="round"/>
+
+  <g clip-path="url(#round)">
+    <rect width="64" height="64" fill="url(#tile)"/>
+    <rect width="64" height="64" fill="url(#glowBlue)"/>
+    <rect width="64" height="64" fill="url(#glowOrange)"/>
+    <rect width="64" height="34" fill="url(#sheen)"/>
+
+    <!-- Soft glow behind the mark for depth -->
+    <g filter="url(#soft)" opacity="0.65">
+      <path d="M15 18 L29 46 L51 9" stroke="url(#stroke)" stroke-width="8"
+            stroke-linecap="round" stroke-linejoin="round"/>
+      <path d="M41 10 L51 9 L50 20" stroke="url(#stroke)" stroke-width="8"
+            stroke-linecap="round" stroke-linejoin="round"/>
+    </g>
+
+    <!-- "V" = rising arrow / checkmark -->
+    <path d="M15 18 L29 46 L51 9" stroke="url(#stroke)" stroke-width="7.5"
+          stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M41 10 L51 9 L50 20" stroke="url(#stroke)" stroke-width="7.5"
+          stroke-linecap="round" stroke-linejoin="round"/>
+    <!-- subtle top highlight along the mark -->
+    <path d="M15 18 L29 46 L51 9" stroke="#ffffff" stroke-opacity="0.18" stroke-width="2"
+          stroke-linecap="round" stroke-linejoin="round"/>
+
+    <!-- Achievement sparkles -->
+    <path d="M47 40 C47 41.6 48.4 43 50 43 C48.4 43 47 44.4 47 46 C47 44.4 45.6 43 44 43 C45.6 43 47 41.6 47 40 Z"
+          fill="#ffd8a6"/>
+    <path d="M13 40 C13 41.1 13.9 42 15 42 C13.9 42 13 42.9 13 44 C13 42.9 12.1 42 11 42 C12.1 42 13 41.1 13 40 Z"
+          fill="#bcd6f5" fill-opacity="0.9"/>
+  </g>
+
+  <!-- Premium inner edge -->
+  <rect x="0.75" y="0.75" width="62.5" height="62.5" rx="15.25" fill="none"
+        stroke="#ffffff" stroke-opacity="0.09"/>
 </svg>
