@@ -40,7 +40,7 @@ export default function Navbar() {
 
   return (
     <nav className="navbar">
-      <Link to="/" className="navbar-brand"><Logo size={26} withText /></Link>
+      <Link to="/" className="navbar-brand"><Logo size={30} withText tile /></Link>
 
       {currentUser ? (
         <>
