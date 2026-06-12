@@ -482,6 +482,21 @@ const backfillUserRoles = async () => {
   await User.update({ roleId: userRole.id }, { where: { roleId: null } })
 }
 
+// sequelize.sync() never ALTERs an existing table, so a new column on an
+// already-created table (Postgres in prod/dev, or a reused SQLite test DB) is
+// missing until we add it explicitly. Unlike the test-only helpers below, this
+// runs in EVERY environment because the live `games` table predates `rawgId` —
+// without it, every game INSERT references a non-existent column and 500s.
+const ensureGameColumns = async () => {
+  const qi = sequelize.getQueryInterface()
+  const tables = await qi.showAllTables()
+  if (!tables.map(t => String(t).toLowerCase()).includes('games')) return
+  const desc = await qi.describeTable('games')
+  if (!desc.rawgId) {
+    await qi.addColumn('games', 'rawgId', { type: DataTypes.STRING, allowNull: true })
+  }
+}
+
 // SQLite doesn't auto-alter on sync() — these helpers patch existing test DBs.
 // Not needed for PostgreSQL (fresh schema is created correctly by sync()).
 const ensureRoleIdColumn = async () => {
@@ -524,6 +539,7 @@ export const initDatabase = async ({ force = false } = {}) => {
     await sequelize.sync({ force: true })
   } else {
     await sequelize.sync()
+    await ensureGameColumns()
     if (isTest) {
       await ensureRoleIdColumn()
       await ensureAuthColumns()
