@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useGames } from '../context/GameContext'
 import GameForm from '../components/GameForm'
+import Wrapped from '../components/Wrapped'
+import { Sparkles } from 'lucide-react'
+import { genreOptions } from '../utils/genres'
 
 const PAGE_SIZE = 5
 
@@ -18,9 +21,10 @@ export default function Library() {
   const [search, setSearch] = useState('')
   const [filterStatus, setFilterStatus] = useState('all')
   const [filterGenre, setFilterGenre] = useState('all')
+  const [showWrapped, setShowWrapped] = useState(false)
 
   const allGames = getGamesByUser(currentUser.id)
-  const genres = ['all', ...new Set(allGames.map(g => g.genre).filter(Boolean))]
+  const genres = ['all', ...genreOptions(allGames.map(g => g.genre))]
 
   const filtered = allGames.filter(g => {
     const matchSearch = g.title.toLowerCase().includes(search.toLowerCase())
@@ -53,7 +57,12 @@ export default function Library() {
     <div className="page">
       <div className="library-header">
         <h1 className="page-title">My Library</h1>
-        <button className="btn btn-primary" onClick={() => setShowForm(true)}>+ Add Game</button>
+        <div className="library-header-actions">
+          <button className="btn btn-wrapped" onClick={() => setShowWrapped(true)}>
+            <Sparkles size={15} /> Wrapped
+          </button>
+          <button className="btn btn-primary" onClick={() => setShowForm(true)}>+ Add Game</button>
+        </div>
       </div>
 
       <div className="library-filters">
@@ -147,6 +156,8 @@ export default function Library() {
           </div>
         )}
       </div>
+
+      {showWrapped && <Wrapped onClose={() => setShowWrapped(false)} />}
 
       {showForm && (
         <GameForm onSave={handleAdd} onClose={() => setShowForm(false)} />

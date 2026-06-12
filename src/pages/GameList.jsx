@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { useGames } from '../context/GameContext'
 import { useAuth } from '../context/AuthContext'
 import { Trophy } from 'lucide-react'
+import { genreOptions } from '../utils/genres'
 
 const PAGE_SIZE = 12
 
@@ -81,7 +82,7 @@ export default function GameList() {
 
   const uniqueGames = Object.values(gameMap)
 
-  const genres = ['all', ...new Set(uniqueGames.map(g => g.genre).filter(Boolean))]
+  const genres = ['all', ...genreOptions(uniqueGames.map(g => g.genre))]
 
   const filtered = uniqueGames.filter(g => {
     const matchSearch = g.title.toLowerCase().includes(search.toLowerCase())

@@ -2087,3 +2087,100 @@ html, body, #root {
   align-items: center;
   gap: 4px;
 }
+
+/* ===== Vauntd Wrapped ===== */
+.library-header-actions { display: flex; gap: 10px; align-items: center; }
+
+.btn-wrapped {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #fff;
+  border: none;
+  background: linear-gradient(120deg, #4a90d9, #9d7fd0 55%, #ff9800);
+  background-size: 160% 160%;
+  font-weight: 600;
+  animation: wrapShimmer 5s ease infinite;
+}
+.btn-wrapped:hover { filter: brightness(1.08); }
+@keyframes wrapShimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.wrapped-card {
+  position: relative;
+  width: 100%;
+  max-width: 440px;
+  max-height: 88vh;
+  overflow-y: auto;
+  border-radius: 20px;
+  padding: 26px 24px 20px;
+  color: #fff;
+  background:
+    radial-gradient(circle at 18% 8%, rgba(74,144,217,0.35), transparent 42%),
+    radial-gradient(circle at 88% 96%, rgba(255,152,0,0.30), transparent 44%),
+    linear-gradient(160deg, #1b2348 0%, #0c0f20 100%);
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 24px 70px rgba(0,0,0,0.55);
+}
+.wrapped-close {
+  position: absolute; top: 14px; right: 14px;
+  background: rgba(255,255,255,0.08); border: none; color: #fff;
+  width: 30px; height: 30px; border-radius: 8px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
+.wrapped-close:hover { background: rgba(255,255,255,0.16); }
+
+.wrapped-header { display: flex; align-items: center; gap: 12px; margin-bottom: 18px; }
+.wrapped-kicker {
+  font-size: 12px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase;
+  color: var(--accent-orange);
+}
+.wrapped-user { font-size: 22px; font-weight: 800; line-height: 1.1; }
+.wrapped-empty { padding: 32px 8px; text-align: center; color: var(--text-secondary); font-size: 14px; }
+
+.wrapped-hero { text-align: center; margin: 8px 0 20px; }
+.wrapped-hero-num { font-size: 64px; font-weight: 800; line-height: 1; letter-spacing: -2px; }
+.wrapped-hero-num span { font-size: 28px; color: var(--accent-blue); margin-left: 2px; }
+.wrapped-hero-label { font-size: 13px; color: var(--text-secondary); margin-top: 4px; }
+
+.wrapped-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+.wrapped-stat {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 12px; padding: 12px 14px;
+}
+.wrapped-stat-num { font-size: 24px; font-weight: 800; margin-top: 6px; }
+.wrapped-stat-text { font-size: 18px; }
+.wrapped-stat-lbl { font-size: 11px; color: var(--text-secondary); margin-top: 2px; }
+.wrapped-ic-blue { color: var(--accent-blue); }
+.wrapped-ic-green { color: var(--accent-green); }
+.wrapped-ic-orange { color: var(--accent-orange); }
+
+.wrapped-highlight {
+  display: flex; align-items: center; gap: 12px;
+  background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 12px; padding: 12px; margin-bottom: 16px;
+}
+.wrapped-cover { width: 52px; height: 52px; border-radius: 8px; object-fit: cover; flex-shrink: 0; }
+.wrapped-highlight-lbl { font-size: 11px; color: var(--accent-orange); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+.wrapped-highlight-title { font-size: 16px; font-weight: 700; }
+.wrapped-highlight-sub { font-size: 12px; color: var(--text-secondary); }
+
+.wrapped-skill {
+  border-radius: 14px; padding: 14px 16px;
+  background: linear-gradient(135deg, rgba(74,144,217,0.16), rgba(255,152,0,0.14));
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.wrapped-skill-head { display: flex; align-items: center; gap: 6px; font-weight: 700; font-size: 13px; margin-bottom: 8px; }
+.wrapped-skill-loading, .wrapped-skill-empty { font-size: 12px; color: var(--text-secondary); }
+.wrapped-skill-score { font-size: 13px; color: var(--text-secondary); }
+.wrapped-skill-num { font-size: 22px; font-weight: 800; color: var(--accent-orange); }
+.wrapped-feat { margin-top: 10px; }
+.wrapped-feat-lbl { font-size: 11px; color: var(--text-secondary); }
+.wrapped-feat-name { font-size: 15px; font-weight: 700; }
+.wrapped-feat-sub { font-size: 12px; color: var(--text-secondary); }
+
+.wrapped-footer { text-align: center; font-size: 12px; color: var(--text-muted); margin-top: 18px; font-weight: 600; }

@@ -1,9 +1,8 @@
 import { useState, useEffect, useRef } from 'react'
 import { validateGame } from '../utils/validators'
+import { GENRES } from '../utils/genres'
 
 const RAWG_KEY = import.meta.env.VITE_RAWG_KEY
-
-const GENRES = ['RPG', 'Action Adventure', 'FPS', 'Strategy', 'Indie', 'Sports', 'Horror', 'Platformer', 'Simulation', 'Fighting']
 
 const STATUS_OPTIONS = [
   { value: 'playing',   label: 'Playing',   tooltip: 'Currently actively playing this game' },
@@ -31,6 +30,13 @@ const mapGenre = (rawgGenres) => {
     'platform': 'Platformer',
     'simulation': 'Simulation',
     'fighting': 'Fighting',
+    'racing': 'Racing',
+    'arcade': 'Arcade',
+    'puzzle': 'Puzzle',
+    'massively-multiplayer': 'MMO',
+    'mmo': 'MMO',
+    'card': 'Card',
+    'board-games': 'Card',
   }
 
   const found = new Set()
@@ -45,13 +51,18 @@ const mapGenre = (rawgGenres) => {
 
   if (found.has('Indie')) return 'Indie'
   if (found.has('RPG')) return 'RPG'
+  if (found.has('Racing')) return 'Racing'
   if (found.has('FPS')) return 'FPS'
   if (found.has('Platformer')) return 'Platformer'
+  if (found.has('MMO')) return 'MMO'
   if (found.has('Strategy')) return 'Strategy'
+  if (found.has('Puzzle')) return 'Puzzle'
   if (found.has('Horror')) return 'Horror'
   if (found.has('Sports')) return 'Sports'
   if (found.has('Simulation')) return 'Simulation'
   if (found.has('Fighting')) return 'Fighting'
+  if (found.has('Card')) return 'Card'
+  if (found.has('Arcade')) return 'Arcade'
   if (found.has('Action Adventure')) return 'Action Adventure'
 
   return ''
