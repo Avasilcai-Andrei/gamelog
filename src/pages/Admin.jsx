@@ -200,7 +200,7 @@ export default function Admin() {
 
       <h2 style={{ marginTop: 32 }}>Database Inspector</h2>
       <p style={{ color: '#888', marginBottom: 12 }}>
-        Live view of every SQL table in <code>gamelog.sqlite</code>. Click a table to expand the rows.
+        Live view of every SQL table in the database. Click a table to expand the rows.
       </p>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 12 }}>
         {tableSummary.map(t => (

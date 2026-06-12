@@ -45,7 +45,7 @@ beforeEach(() => {
 describe('Navbar', () => {
   it('shows brand link', () => {
     renderWith()
-    expect(screen.getByText('GameLog')).toBeInTheDocument()
+    expect(screen.getByText('Vauntd')).toBeInTheDocument()
   })
 
   it('shows Login and Register links when logged out', () => {

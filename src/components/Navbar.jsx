@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Menu, X } from 'lucide-react'
 import { useAuth } from '../context/AuthContext'
 import { useGames } from '../context/GameContext'
+import Logo from './Logo'
 
 export default function Navbar() {
   const { currentUser, logout, isAdmin } = useAuth()
@@ -39,7 +40,7 @@ export default function Navbar() {
 
   return (
     <nav className="navbar">
-      <Link to="/" className="navbar-brand">GameLog</Link>
+      <Link to="/" className="navbar-brand"><Logo size={26} withText /></Link>
 
       {currentUser ? (
         <>

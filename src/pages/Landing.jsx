@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { Gamepad2, NotebookPen, BarChart2 } from 'lucide-react'
+import Logo from '../components/Logo'
 
 const COVERS = [
   'https://cdn.cloudflare.steamstatic.com/steam/apps/1245620/header.jpg',
@@ -28,10 +29,13 @@ export default function Landing() {
 
       <div className="landing-right">
         <div className="landing-content">
-          <h1 className="landing-title">GameLog</h1>
-          <p className="landing-tagline">Your gaming journal. Every hour. Every story.</p>
+          <h1 className="landing-title">
+            <Logo size={44} className="landing-logo-mark" /> Vauntd
+          </h1>
+          <p className="landing-tagline">Earn the brag. Rank by skill, not hours.</p>
           <p className="landing-desc">
-            Track your games, log your sessions, and capture every lore discovery.
+            Track your games, log your sessions, and climb each game's leaderboard by
+            completing achievements — the rarer the feat, the higher you rank.
           </p>
           <Link to="/register" className="btn btn-primary landing-cta">
             Get started

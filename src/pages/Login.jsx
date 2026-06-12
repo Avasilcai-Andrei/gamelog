@@ -43,7 +43,7 @@ export default function Login() {
     <div className="auth-page">
       <div className="auth-bg" />
       <div className="auth-card">
-        <div className="auth-brand">GameLog</div>
+        <div className="auth-brand">Vauntd</div>
         <div className="auth-subtitle">Welcome back</div>
 
         {locationMessage && <div style={{ color: 'var(--color-success, green)', textAlign: 'center', marginBottom: '0.75rem' }}>{locationMessage}</div>}

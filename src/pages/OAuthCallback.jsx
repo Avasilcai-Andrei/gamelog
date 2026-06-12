@@ -21,7 +21,7 @@ export default function OAuthCallback() {
       <div className="auth-page">
         <div className="auth-bg" />
         <div className="auth-card">
-          <div className="auth-brand">GameLog</div>
+          <div className="auth-brand">Vauntd</div>
           <div className="auth-error">OAuth login failed. No token received.</div>
           <Link to="/login" className="btn btn-primary" style={{ width: '100%', marginTop: '1rem' }}>
             Back to Login

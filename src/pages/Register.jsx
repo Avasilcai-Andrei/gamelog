@@ -33,7 +33,7 @@ export default function Register() {
     <div className="auth-page">
       <div className="auth-bg" />
       <div className="auth-card">
-        <div className="auth-brand">GameLog</div>
+        <div className="auth-brand">Vauntd</div>
         <div className="auth-subtitle">Create your account</div>
 
         {serverError && <div className="auth-error">{serverError}</div>}

@@ -19,7 +19,7 @@ export default function EmailVerify() {
     <div className="auth-page">
       <div className="auth-bg" />
       <div className="auth-card">
-        <div className="auth-brand">GameLog</div>
+        <div className="auth-brand">Vauntd</div>
 
         {status === 'pending' && (
           <div className="auth-subtitle">Verifying your email...</div>

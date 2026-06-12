@@ -16,7 +16,7 @@ export default function ResetPassword() {
       <div className="auth-page">
         <div className="auth-bg" />
         <div className="auth-card">
-          <div className="auth-brand">GameLog</div>
+          <div className="auth-brand">Vauntd</div>
           <div className="auth-error">Invalid or missing reset token.</div>
           <Link to="/forgot-password" className="btn btn-ghost" style={{ width: '100%', marginTop: '1rem' }}>
             Request a new link
@@ -52,7 +52,7 @@ export default function ResetPassword() {
     <div className="auth-page">
       <div className="auth-bg" />
       <div className="auth-card">
-        <div className="auth-brand">GameLog</div>
+        <div className="auth-brand">Vauntd</div>
         <div className="auth-subtitle">Choose a new password</div>
 
         {serverError && <div className="auth-error">{serverError}</div>}

@@ -24,7 +24,7 @@ export default function ForgotPassword() {
       <div className="auth-page">
         <div className="auth-bg" />
         <div className="auth-card">
-          <div className="auth-brand">GameLog</div>
+          <div className="auth-brand">Vauntd</div>
           <div className="auth-subtitle">Check your email</div>
           <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', marginBottom: '1rem' }}>
             If an account with that email exists, a password reset link has been sent.
@@ -41,7 +41,7 @@ export default function ForgotPassword() {
     <div className="auth-page">
       <div className="auth-bg" />
       <div className="auth-card">
-        <div className="auth-brand">GameLog</div>
+        <div className="auth-brand">Vauntd</div>
         <div className="auth-subtitle">Reset your password</div>
 
         {error && <div className="auth-error">{error}</div>}
