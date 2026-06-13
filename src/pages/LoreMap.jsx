@@ -87,6 +87,9 @@ export default function LoreMap() {
   const pointersRef = useRef(new Map())
   const pinchRef = useRef(null)
   const suppressClick = useRef(false)
+  const viewportRef = useRef(null)
+  const dragRef = useRef(null)
+  const [draggingId, setDraggingId] = useState(null)
   const [view, setView] = useState({ scale: 1, x: 0, y: 0 })
 
   const bgImage = meta.backgroundUrl || (entries.find(e => e.coverUrl) || entries[0])?.coverUrl || ''
@@ -159,6 +162,55 @@ export default function LoreMap() {
   const onPinClick = (id) => {
     if (suppressClick.current) { suppressClick.current = false; return }
     setSelectedId(id)
+  }
+
+  // --- Admin pin dragging (reposition by dragging) ---
+  // Pins are positioned in % of the (unscaled) viewport, which is then
+  // translate+scale transformed, so a screen-pixel delta maps to a % delta of
+  // viewport.offsetWidth divided by the current zoom scale.
+  const onPinPointerDown = (e, node) => {
+    if (!canEdit) return // only admins reposition; others click to view
+    e.stopPropagation() // don't let the canvas start a pan
+    e.currentTarget.setPointerCapture?.(e.pointerId)
+    dragRef.current = {
+      id: node.id, startClientX: e.clientX, startClientY: e.clientY,
+      startX: node.x, startY: node.y, curX: node.x, curY: node.y, moved: false,
+    }
+  }
+  const onPinPointerMove = (e) => {
+    const d = dragRef.current
+    if (!d) return
+    const base = viewportRef.current || canvasRef.current
+    if (!base) return
+    if (!d.moved && Math.hypot(e.clientX - d.startClientX, e.clientY - d.startClientY) > 4) {
+      d.moved = true
+      setDraggingId(d.id)
+    }
+    if (!d.moved) return
+    const dxPct = (e.clientX - d.startClientX) / view.scale / base.offsetWidth * 100
+    const dyPct = (e.clientY - d.startClientY) / view.scale / base.offsetHeight * 100
+    d.curX = Math.min(100, Math.max(0, d.startX + dxPct))
+    d.curY = Math.min(100, Math.max(0, d.startY + dyPct))
+    setNodes(prev => prev.map(n => (n.id === d.id ? { ...n, x: d.curX, y: d.curY } : n)))
+  }
+  const onPinPointerUp = async (e) => {
+    const d = dragRef.current
+    if (!d) return
+    e.currentTarget.releasePointerCapture?.(e.pointerId)
+    dragRef.current = null
+    setDraggingId(null)
+    if (!d.moved) return // a plain click — let onClick open the pin
+    suppressClick.current = true // swallow the click that fires after a drag
+    const x = Math.round(d.curX * 100) / 100
+    const y = Math.round(d.curY * 100) / 100
+    try {
+      const updated = await request(`/lore/${apiKey}/nodes/${d.id}`, { method: 'PATCH', body: JSON.stringify({ x, y }) })
+      setNodes(prev => prev.map(n => (n.id === d.id ? updated : n)))
+    } catch (err) {
+      setError(err.message)
+      // Revert the optimistic move by reloading the authoritative positions.
+      request(`/lore/${apiKey}`).then(data => setNodes(data.nodes || [])).catch(() => {})
+    }
   }
 
   // Native non-passive wheel listener so we can preventDefault for zoom.
@@ -276,7 +328,12 @@ export default function LoreMap() {
       {filteredNodes.map(node => {
         const tm = typeMeta(node.type)
         return (
-          <button key={node.id} onClick={() => onPinClick(node.id)} className="lore-node"
+          <button key={node.id} onClick={() => onPinClick(node.id)}
+            onPointerDown={(e) => onPinPointerDown(e, node)}
+            onPointerMove={onPinPointerMove}
+            onPointerUp={onPinPointerUp}
+            onPointerCancel={onPinPointerUp}
+            className={`lore-node${canEdit ? ' lore-node-draggable' : ''}${draggingId === node.id ? ' lore-node-dragging' : ''}`}
             style={{ left: `${node.x}%`, top: `${node.y}%`, borderColor: tm.color }}>
             <span className="lore-dot" style={{ background: tm.color }} />
             {node.label}
@@ -491,6 +548,7 @@ export default function LoreMap() {
                     <X size={14} /> Clear Background
                   </button>
                 )}
+                <p className="lore-panel-meta lore-input-gap">Tip: drag a pin to reposition it — moves save automatically.</p>
               </div>
             )}
 
@@ -557,7 +615,7 @@ export default function LoreMap() {
             )}
 
             {bgImage ? (
-              <div className="lore-viewport" style={{ transform: `translate(${view.x}px, ${view.y}px) scale(${view.scale})` }}>
+              <div ref={viewportRef} className="lore-viewport" style={{ transform: `translate(${view.x}px, ${view.y}px) scale(${view.scale})` }}>
                 <img className="lore-canvas-img" src={bgImage} alt="" draggable="false" />
                 <div className="lore-canvas-overlay" />
                 {renderMapLayer()}

@@ -1173,6 +1173,19 @@ html, body, #root {
   box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.25);
 }
 
+/* Admins can drag pins to reposition them. */
+.lore-node-draggable {
+  cursor: grab;
+  touch-action: none; /* let pointer-drag work on touch without page-scrolling */
+}
+
+.lore-node-dragging {
+  cursor: grabbing;
+  z-index: 5;
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.6);
+  opacity: 0.92;
+}
+
 .lore-panel {
   position: absolute;
   bottom: 16px;
