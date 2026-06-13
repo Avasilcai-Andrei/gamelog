@@ -141,7 +141,8 @@ export function AuthProvider({ children }) {
   const requestPasswordReset = async (email) => {
     const result = await apiCall('/auth/password-reset/request', { email })
     if (!result.ok) return { ok: false, error: result.error }
-    return { ok: true }
+    // devUrl is returned only when email delivery isn't configured/working.
+    return { ok: true, devUrl: result.data?.devUrl || null }
   }
 
   const resetPassword = async (token, password) => {

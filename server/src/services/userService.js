@@ -3,7 +3,7 @@ import { Op } from 'sequelize'
 import bcrypt from 'bcryptjs'
 import { User, Role, Permission } from '../db/index.js'
 import { signToken } from '../utils/jwt.js'
-import { sendPasswordResetEmail, sendVerificationEmail } from './emailService.js'
+import { sendPasswordResetEmail, sendVerificationEmail, isEmailConfigured } from './emailService.js'
 
 const userWithRoleQuery = {
   include: [{
@@ -110,20 +110,32 @@ export const findOrCreateOAuthUser = async (profile) => {
 
 export const requestPasswordReset = async (email) => {
   const instance = await User.findOne({ where: { email } })
-  if (instance) {
-    const rawToken = crypto.randomBytes(32).toString('hex')
-    const hash = crypto.createHash('sha256').update(rawToken).digest('hex')
-    const expires = new Date(Date.now() + 15 * 60 * 1000)
-    await instance.update({ resetToken: hash, resetTokenExpires: expires })
-    const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173'
+  // No such account: return ok with no link so we don't leak which emails exist.
+  if (!instance) return { ok: true }
+
+  const rawToken = crypto.randomBytes(32).toString('hex')
+  const hash = crypto.createHash('sha256').update(rawToken).digest('hex')
+  const expires = new Date(Date.now() + 15 * 60 * 1000)
+  await instance.update({ resetToken: hash, resetTokenExpires: expires })
+
+  const clientUrl = process.env.CLIENT_URL || 'http://localhost:5173'
+  const resetUrl = `${clientUrl}/reset-password?token=${rawToken}`
+
+  // With SMTP configured, send the email. If sending fails — or no SMTP is set
+  // up at all (common in dev/demo) — fall back to returning the link so the
+  // flow still works instead of silently going nowhere.
+  if (isEmailConfigured()) {
     try {
-      await sendPasswordResetEmail(email, `${clientUrl}/reset-password?token=${rawToken}`)
+      await sendPasswordResetEmail(email, resetUrl)
+      return { ok: true }
     } catch (emailErr) {
-      console.error('[password-reset] email failed:', emailErr.message)
+      console.error('[password-reset] email send failed, returning link instead:', emailErr.message)
+      return { ok: true, devUrl: resetUrl }
     }
   }
-  // Always return ok:true to avoid leaking whether an email exists
-  return { ok: true }
+
+  console.warn('[password-reset] SMTP not configured — reset link:', resetUrl)
+  return { ok: true, devUrl: resetUrl }
 }
 
 export const resetPassword = async (rawToken, newPassword) => {

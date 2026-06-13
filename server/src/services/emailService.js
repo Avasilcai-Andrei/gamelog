@@ -1,15 +1,24 @@
 import nodemailer from 'nodemailer'
 
-const createTransporter = () =>
-  nodemailer.createTransport({
+// Email is only "configured" when we actually have SMTP credentials. Without
+// them, Gmail auth (and a `from` of "Vauntd <undefined>") fails — so callers
+// check this first and fall back to surfacing the link instead of pretending
+// an email went out.
+export const isEmailConfigured = () =>
+  Boolean(process.env.SMTP_USER && process.env.SMTP_PASS)
+
+const createTransporter = () => {
+  const port = Number(process.env.SMTP_PORT) || 587
+  return nodemailer.createTransport({
     host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: Number(process.env.SMTP_PORT) || 587,
-    secure: false,
+    port,
+    secure: port === 465, // implicit TLS on 465; STARTTLS on 587
     auth: {
       user: process.env.SMTP_USER,
       pass: process.env.SMTP_PASS,
     },
   })
+}
 
 export const sendPasswordResetEmail = async (to, resetUrl) => {
   const transporter = createTransporter()

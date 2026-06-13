@@ -33,8 +33,14 @@ router.post('/password-reset/request', async (req, res, next) => {
   try {
     const parsed = passwordResetRequestSchema.safeParse(req.body)
     if (!parsed.success) return res.status(400).json({ error: parsed.error.issues[0]?.message })
-    await requestPasswordReset(parsed.data.email)
-    return res.json({ ok: true, message: 'If that email exists, a reset link has been sent.' })
+    const result = await requestPasswordReset(parsed.data.email)
+    // devUrl is present only when email delivery isn't available (dev/demo or
+    // send failure), so the client can show the link directly.
+    return res.json({
+      ok: true,
+      message: 'If that email exists, a reset link has been sent.',
+      ...(result.devUrl ? { devUrl: result.devUrl } : {}),
+    })
   } catch (err) {
     return next(err)
   }

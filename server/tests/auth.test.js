@@ -6,6 +6,7 @@ import { signToken, verifyToken } from '../src/utils/jwt.js'
 import { loginUser, registerUser } from '../src/services/userService.js'
 
 vi.mock('../src/services/emailService.js', () => ({
+  isEmailConfigured: vi.fn(() => true),
   sendPasswordResetEmail: vi.fn().mockResolvedValue(undefined),
   sendVerificationEmail: vi.fn().mockResolvedValue(undefined),
 }))
@@ -257,6 +258,16 @@ describe('Password reset flow', () => {
     const { requestPasswordReset } = await import('../src/services/userService.js')
     const result = await requestPasswordReset('nobody@nowhere.com')
     expect(result.ok).toBe(true)
+    expect(result.devUrl).toBeUndefined()
+  })
+
+  it('returns a devUrl fallback link when email delivery is not configured', async () => {
+    const { isEmailConfigured } = await import('../src/services/emailService.js')
+    isEmailConfigured.mockReturnValueOnce(false)
+    const { requestPasswordReset } = await import('../src/services/userService.js')
+    const result = await requestPasswordReset('admin@gamelog.local')
+    expect(result.ok).toBe(true)
+    expect(result.devUrl).toMatch(/\/reset-password\?token=/)
   })
 
   it('resetPassword with a valid token updates the password and clears the token', async () => {

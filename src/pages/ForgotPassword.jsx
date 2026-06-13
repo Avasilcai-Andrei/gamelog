@@ -7,12 +7,14 @@ export default function ForgotPassword() {
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
   const [sent, setSent] = useState(false)
+  const [devUrl, setDevUrl] = useState(null)
 
   const handleSubmit = async () => {
     if (!email.trim()) { setError('Email is required'); return }
     setError('')
     const result = await requestPasswordReset(email.trim())
     if (result.ok) {
+      setDevUrl(result.devUrl || null)
       setSent(true)
     } else {
       setError(result.error || 'Something went wrong')
@@ -25,10 +27,20 @@ export default function ForgotPassword() {
         <div className="auth-bg" />
         <div className="auth-card">
           <div className="auth-brand">Vauntd</div>
-          <div className="auth-subtitle">Check your email</div>
-          <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', marginBottom: '1rem' }}>
-            If an account with that email exists, a password reset link has been sent.
-          </p>
+          <div className="auth-subtitle">{devUrl ? 'Use this reset link' : 'Check your email'}</div>
+          {devUrl ? (
+            <p style={{ textAlign: 'center', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+              Email delivery isn&apos;t configured here, so use this link directly (expires in 15 minutes):
+              <br />
+              <Link to={devUrl.replace(/^.*\/reset-password/, '/reset-password')} style={{ wordBreak: 'break-all' }}>
+                Reset your password
+              </Link>
+            </p>
+          ) : (
+            <p style={{ textAlign: 'center', color: 'var(--text-secondary)', marginBottom: '1rem' }}>
+              If an account with that email exists, a password reset link has been sent.
+            </p>
+          )}
           <Link to="/login" className="btn btn-ghost" style={{ width: '100%' }}>
             Back to Login
           </Link>
