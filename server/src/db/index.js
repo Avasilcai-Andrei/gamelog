@@ -227,7 +227,9 @@ export const LoreEdge = sequelize.define('LoreEdge', {
 
 export const LoreMapMeta = sequelize.define('LoreMapMeta', {
   gameKey: { type: DataTypes.STRING, primaryKey: true },
-  backgroundUrl: { type: DataTypes.STRING, allowNull: false, defaultValue: '' },
+  // TEXT (not STRING/VARCHAR(255)): admins can upload a background, which is
+  // stored inline as a base64 data URL — far larger than a plain URL.
+  backgroundUrl: { type: DataTypes.TEXT, allowNull: false, defaultValue: '' },
   updatedBy: { type: DataTypes.STRING, allowNull: false, defaultValue: '' },
   updatedAt: { type: DataTypes.STRING, allowNull: false, defaultValue: () => new Date().toISOString() },
 }, {
@@ -541,6 +543,20 @@ const ensureGameColumns = async () => {
   }
 }
 
+// The live lore_map_meta table predates inline image uploads, so its
+// backgroundUrl is still VARCHAR(255) — too small for a base64 data URL. Widen
+// it to TEXT in EVERY environment (sync() never ALTERs an existing column).
+const ensureLoreMetaColumns = async () => {
+  const qi = sequelize.getQueryInterface()
+  const tables = await qi.showAllTables()
+  if (!tables.map(t => String(t).toLowerCase()).includes('lore_map_meta')) return
+  // SQLite's dynamic typing ignores VARCHAR length, so only Postgres needs this.
+  if (sequelize.getDialect() !== 'postgres') return
+  await qi.changeColumn('lore_map_meta', 'backgroundUrl', {
+    type: DataTypes.TEXT, allowNull: false, defaultValue: '',
+  })
+}
+
 // SQLite doesn't auto-alter on sync() — these helpers patch existing test DBs.
 // Not needed for PostgreSQL (fresh schema is created correctly by sync()).
 const ensureRoleIdColumn = async () => {
@@ -604,6 +620,7 @@ export const initDatabase = async ({ force = false } = {}) => {
   } else {
     await sequelize.sync()
     await ensureGameColumns()
+    await ensureLoreMetaColumns()
     if (isTest) {
       await ensureRoleIdColumn()
       await ensureAuthColumns()

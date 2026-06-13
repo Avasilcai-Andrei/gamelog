@@ -79,8 +79,18 @@ export const loreEdgeSchema = z.object({
   toNodeId: z.string().min(1),
 })
 
+// Accept an http(s) URL, an inline uploaded image (base64 data URL), or empty.
+const isImageDataUrl = (s) => /^data:image\/[a-z0-9.+-]+;base64,/i.test(s)
 export const loreMetaSchema = z.object({
-  backgroundUrl: z.string().trim().url().or(z.literal('')).default(''),
+  backgroundUrl: z
+    .string()
+    .trim()
+    .max(7_000_000, 'Image is too large')
+    .refine(
+      (s) => s === '' || isImageDataUrl(s) || z.string().url().safeParse(s).success,
+      'Must be a valid URL or uploaded image',
+    )
+    .default(''),
 })
 
 export const userAchievementsSchema = z.object({

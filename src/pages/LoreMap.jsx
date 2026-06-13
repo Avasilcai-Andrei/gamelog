@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import { useGames } from '../context/GameContext'
-import { ChevronLeft, Plus, Link2, Save, X, Trash2, Pencil, MessageSquarePlus, ThumbsUp, Check, Image, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react'
+import { ChevronLeft, Plus, Link2, Save, X, Trash2, Pencil, MessageSquarePlus, ThumbsUp, Check, Image, Upload, ZoomIn, ZoomOut, Maximize2 } from 'lucide-react'
 
 const API_BASE = `${import.meta.env.VITE_API_URL || 'http://localhost:4000'}/api`
 
@@ -24,6 +24,33 @@ const MAP_BACKDROPS = [
 const EMPTY_FORM = { label: '', type: 'location', description: '', x: 35, y: 35 }
 const normalizeTitle = (title) => decodeURIComponent(title || '').trim().toLowerCase()
 const typeMeta = (type) => NODE_TYPES.find(t => t.value === type) || NODE_TYPES[0]
+
+// Downscale + compress a picked image to a base64 data URL before upload, so a
+// phone-sized photo doesn't bloat the DB row it's stored in. Caps the longest
+// edge at MAX_EDGE and re-encodes as JPEG; PNGs with transparency keep PNG.
+const MAX_EDGE = 1600
+const fileToResizedDataUrl = (file) => new Promise((resolve, reject) => {
+  const reader = new FileReader()
+  reader.onerror = () => reject(new Error('Could not read file'))
+  reader.onload = () => {
+    const img = new window.Image()
+    img.onerror = () => reject(new Error('Could not load image'))
+    img.onload = () => {
+      const scale = Math.min(1, MAX_EDGE / Math.max(img.width, img.height))
+      const w = Math.round(img.width * scale)
+      const h = Math.round(img.height * scale)
+      const canvas = document.createElement('canvas')
+      canvas.width = w
+      canvas.height = h
+      const ctx = canvas.getContext('2d')
+      ctx.drawImage(img, 0, 0, w, h)
+      const isPng = file.type === 'image/png'
+      resolve(canvas.toDataURL(isPng ? 'image/png' : 'image/jpeg', 0.82))
+    }
+    img.src = reader.result
+  }
+  reader.readAsDataURL(file)
+})
 
 export default function LoreMap() {
   const { title } = useParams()
@@ -49,6 +76,8 @@ export default function LoreMap() {
   const [typeFilter, setTypeFilter] = useState('all')
   const [search, setSearch] = useState('')
   const [bgInput, setBgInput] = useState('')
+  const [uploading, setUploading] = useState(false)
+  const fileInputRef = useRef(null)
   const [votedIds, setVotedIds] = useState(() => new Set())
   const [showProposals, setShowProposals] = useState(false)
 
@@ -189,7 +218,10 @@ export default function LoreMap() {
         setNodes(data.nodes || [])
         setEdges(data.edges || [])
         setMeta(data.meta || { backgroundUrl: '' })
-        setBgInput(data.meta?.backgroundUrl || '')
+        // Don't pour a giant uploaded data URL into the text field — leave it
+        // blank so the input stays usable; the image still renders on the map.
+        const bg = data.meta?.backgroundUrl || ''
+        setBgInput(bg.startsWith('data:') ? '' : bg)
       })
       .catch(err => { if (active) setError(err.message) })
       .finally(() => { if (active) setLoading(false) })
@@ -330,12 +362,36 @@ export default function LoreMap() {
     }
   }
 
+  const saveBackground = async (backgroundUrl) => {
+    const updated = await request(`/lore/${apiKey}/meta`, { method: 'PUT', body: JSON.stringify({ backgroundUrl }) })
+    setMeta(updated)
+    setBgInput(backgroundUrl.startsWith('data:') ? '' : backgroundUrl)
+  }
+
   const handleSaveBackground = async () => {
     try {
-      const updated = await request(`/lore/${apiKey}/meta`, { method: 'PUT', body: JSON.stringify({ backgroundUrl: bgInput.trim() }) })
-      setMeta(updated)
+      await saveBackground(bgInput.trim())
     } catch (err) {
       setError(err.message)
+    }
+  }
+
+  const handleUploadBackground = async (e) => {
+    const file = e.target.files?.[0]
+    e.target.value = '' // allow re-picking the same file
+    if (!file) return
+    if (!file.type.startsWith('image/')) {
+      setError('Please choose an image file')
+      return
+    }
+    setUploading(true)
+    try {
+      const dataUrl = await fileToResizedDataUrl(file)
+      await saveBackground(dataUrl)
+    } catch (err) {
+      setError(err.message)
+    } finally {
+      setUploading(false)
     }
   }
 
@@ -416,6 +472,25 @@ export default function LoreMap() {
                 <button className="btn btn-ghost lore-link-btn" onClick={handleSaveBackground}>
                   <Image size={14} /> Set Background
                 </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  style={{ display: 'none' }}
+                  onChange={handleUploadBackground}
+                />
+                <button
+                  className="btn btn-ghost lore-link-btn"
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploading}
+                >
+                  <Upload size={14} /> {uploading ? 'Uploading…' : 'Upload Image'}
+                </button>
+                {meta.backgroundUrl && (
+                  <button className="btn btn-ghost lore-link-btn" onClick={() => saveBackground('').catch(err => setError(err.message))}>
+                    <X size={14} /> Clear Background
+                  </button>
+                )}
               </div>
             )}
 

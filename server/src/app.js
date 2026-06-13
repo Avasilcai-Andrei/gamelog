@@ -32,7 +32,8 @@ export const createApp = (broadcast) => {
   const app = express()
 
   app.use(cors())
-  app.use(express.json())
+  // 5mb: lore map backgrounds can be uploaded as inline base64 data URLs.
+  app.use(express.json({ limit: '5mb' }))
   app.use(session({
     secret: process.env.SESSION_SECRET || 'gamelog-session-secret',
     resave: false,
