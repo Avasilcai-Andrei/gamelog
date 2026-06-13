@@ -86,6 +86,9 @@ export default function GameForm({ initial, onSave, onClose }) {
   const [showSuggestions, setShowSuggestions] = useState(false)
   const searchTimeout = useRef(null)
   const wrapperRef = useRef(null)
+  // Set when `query` changes because the user picked a result (not typed), so
+  // the search effect below doesn't immediately re-open the suggestions list.
+  const skipSearchRef = useRef(false)
 
   useEffect(() => {
     const handler = (e) => {
@@ -98,6 +101,8 @@ export default function GameForm({ initial, onSave, onClose }) {
   }, [])
 
   useEffect(() => {
+    // A selection just set the query — don't re-search or re-open the list.
+    if (skipSearchRef.current) { skipSearchRef.current = false; return }
     if (!query || query.length < 2) { setSuggestions([]); return }
     clearTimeout(searchTimeout.current)
     searchTimeout.current = setTimeout(async () => {
@@ -119,6 +124,7 @@ export default function GameForm({ initial, onSave, onClose }) {
   }, [query])
 
   const selectGame = async (game) => {
+    skipSearchRef.current = true
     setShowSuggestions(false)
     setQuery(game.name)
     let playtime = game.playtime || ''
@@ -169,8 +175,9 @@ export default function GameForm({ initial, onSave, onClose }) {
               className={`input ${errors.title ? 'input-error' : ''}`}
               placeholder="Search for a game..."
               value={query}
-              onChange={e => { setQuery(e.target.value); update('title', e.target.value) }}
+              onChange={e => { skipSearchRef.current = false; setQuery(e.target.value); update('title', e.target.value) }}
               onFocus={() => suggestions.length > 0 && setShowSuggestions(true)}
+              onClick={() => suggestions.length > 0 && setShowSuggestions(true)}
               autoComplete="off"
             />
             {searching && (
