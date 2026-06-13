@@ -94,6 +94,7 @@ html, body, #root {
 }
 
 .navbar-tab {
+  position: relative;
   padding: 6px 14px;
   border-radius: 6px;
   border: none;
@@ -110,6 +111,16 @@ html, body, #root {
 .navbar-tab:hover, .navbar-tab.active {
   background: rgba(255,255,255,0.2);
 }
+
+/* Sliding active-tab pill (motion layoutId) for the logged-in nav tabs. */
+.navbar-tab-pill {
+  position: absolute;
+  inset: 0;
+  border-radius: 6px;
+  background: rgba(255,255,255,0.2);
+  z-index: 0;
+}
+.navbar-tab-label { position: relative; z-index: 1; }
 
 .navbar-user {
   color: white;
@@ -254,6 +265,29 @@ html, body, #root {
   transform: translateY(-1px);
   box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
 }
+
+.btn:active { transform: translateY(0) scale(0.97); }
+
+/* --- Shared hover utilities (one motion language) --- */
+/* Lift a card-like surface on hover. Apply selectively (grid cards), not to
+   every .card, so static panels stay calm. */
+.lift-hover {
+  transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.28s ease, border-color 0.28s ease;
+  will-change: transform;
+}
+.lift-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 18px 40px rgba(3, 8, 20, 0.45);
+  border-color: var(--border-light);
+}
+
+/* Contained zoom for cover images: put on the wrapper, it scales its <img>. */
+.cover-zoom { overflow: hidden; }
+.cover-zoom img {
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+.cover-zoom:hover img { transform: scale(1.06); }
 
 .btn-danger {
   background: transparent;
@@ -951,15 +985,18 @@ html, body, #root {
 
 .gamelist-card:hover {
   border-color: var(--accent-blue);
-  transform: translateY(-2px);
+  box-shadow: 0 18px 40px rgba(3, 8, 20, 0.45);
 }
+/* Lift is driven by motion's whileHover (motion owns the card transform). */
 
 .gamelist-cover {
   width: 100%;
   height: 120px;
   object-fit: cover;
   display: block;
+  transition: transform 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
+.gamelist-card:hover .gamelist-cover { transform: scale(1.07); }
 
 .gamelist-cover-placeholder {
   background: var(--bg-secondary);
@@ -2341,3 +2378,20 @@ html, body, #root {
 .challenge-name { flex: 1; font-weight: 600; font-size: 13px; }
 .challenge-score { font-weight: 800; color: var(--accent-orange); }
 .challenge-empty { font-size: 13px; color: var(--text-secondary); padding: 6px 0; }
+
+/* --- Reduced motion ---------------------------------------------------------
+   Belt-and-suspenders alongside MotionConfig reducedMotion="user": neutralize
+   CSS transitions/animations (including pre-existing keyframes and the hover
+   utilities above) for users who ask the OS to reduce motion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  .lift-hover:hover { transform: none; }
+  .cover-zoom:hover img { transform: none; }
+}

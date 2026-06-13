@@ -1,9 +1,13 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Menu, X } from 'lucide-react'
+import { motion, AnimatePresence } from 'motion/react'
 import { useAuth } from '../context/AuthContext'
 import { useGames } from '../context/GameContext'
+import { SPRING, SPRING_SOFT, EASE } from '../motion/tokens'
 import Logo from './Logo'
+
+const M = motion
 
 export default function Navbar() {
   const { currentUser, logout, isAdmin } = useAuth()
@@ -39,15 +43,23 @@ export default function Navbar() {
   ]
 
   return (
-    <nav className="navbar">
+    <M.nav className="navbar" initial={{ y: -100 }} animate={{ y: 0 }} transition={SPRING_SOFT}>
       <Link to="/" className="navbar-brand"><Logo size={30} withText tile /></Link>
 
       {currentUser ? (
         <>
           <div className="navbar-tabs">
-            {tabs.map(t => (
-              <Link key={t.to} to={t.to} className={`navbar-tab ${isActive(t.to)}`}>{t.label}</Link>
-            ))}
+            {tabs.map(t => {
+              const active = location.pathname === t.to
+              return (
+                // Active state is a single pill that slides between tabs via the
+                // shared layoutId (instead of a per-tab background toggle).
+                <Link key={t.to} to={t.to} className="navbar-tab">
+                  {active && <M.span layoutId="navPill" className="navbar-tab-pill" transition={SPRING} />}
+                  <span className="navbar-tab-label">{t.label}</span>
+                </Link>
+              )
+            })}
           </div>
 
           <div className="navbar-right">
@@ -69,22 +81,29 @@ export default function Navbar() {
             {menuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
 
+          <AnimatePresence>
           {menuOpen && (
             <>
-              <div className="nav-drawer-overlay" onClick={() => setMenuOpen(false)} />
-              <aside className="nav-drawer">
-                <div className="nav-drawer-tabs">
+              <M.div className="nav-drawer-overlay" onClick={() => setMenuOpen(false)}
+                initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} />
+              <M.aside className="nav-drawer" style={{ animation: 'none' }}
+                initial={{ x: '100%' }} animate={{ x: 0 }} exit={{ x: '100%' }} transition={SPRING_SOFT}>
+                <M.div className="nav-drawer-tabs"
+                  initial="hidden" animate="show"
+                  variants={{ show: { transition: { staggerChildren: 0.05, delayChildren: 0.08 } } }}>
                   {tabs.map(t => (
-                    <Link
-                      key={t.to}
-                      to={t.to}
-                      className={`nav-drawer-link ${isActive(t.to)}`}
-                      onClick={() => setMenuOpen(false)}
-                    >
-                      {t.label}
-                    </Link>
+                    <M.div key={t.to}
+                      variants={{ hidden: { opacity: 0, x: 20 }, show: { opacity: 1, x: 0, transition: { ease: EASE } } }}>
+                      <Link
+                        to={t.to}
+                        className={`nav-drawer-link ${isActive(t.to)}`}
+                        onClick={() => setMenuOpen(false)}
+                      >
+                        {t.label}
+                      </Link>
+                    </M.div>
                   ))}
-                </div>
+                </M.div>
                 <div className="nav-drawer-footer">
                   <span className={`sync-status ${offline ? 'offline' : 'online'}`}>
                     {offline ? `Offline · queued ${queued}` : 'Online'}
@@ -100,9 +119,10 @@ export default function Navbar() {
                     Logout
                   </button>
                 </div>
-              </aside>
+              </M.aside>
             </>
           )}
+          </AnimatePresence>
         </>
       ) : (
         <div className="navbar-auth-links">
@@ -110,6 +130,6 @@ export default function Navbar() {
           <Link to="/register" className={`navbar-tab ${isActive('/register')}`}>Register</Link>
         </div>
       )}
-    </nav>
+    </M.nav>
   )
 }

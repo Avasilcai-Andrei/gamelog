@@ -1,7 +1,10 @@
 import { useEffect, useState } from 'react'
+import { motion } from 'motion/react'
 import { useGames } from '../context/GameContext'
 import { Trophy, Pencil, X } from 'lucide-react'
+import { scaleIn, staggerContainer, SPRING } from '../motion/tokens'
 
+const M = motion
 const MAX = 5
 
 const titleCase = (key) => String(key || '').replace(/\b\w/g, c => c.toUpperCase())
@@ -15,7 +18,7 @@ const rarityClass = (percent) => {
 
 function TrophyTile({ a }) {
   return (
-    <div className="trophy-tile">
+    <M.div className="trophy-tile" variants={scaleIn} whileHover={{ y: -3, transition: SPRING }}>
       {a.image
         ? <img src={a.image} alt="" className="trophy-img" onError={e => e.target.style.display = 'none'} />
         : <div className="trophy-img trophy-img-ph"><Trophy size={18} /></div>}
@@ -26,7 +29,7 @@ function TrophyTile({ a }) {
       <span className={`ach-rarity ${rarityClass(a.percent)}`}>
         {a.percent < 100 ? `${a.percent.toFixed(1)}%` : '100%'}
       </span>
-    </div>
+    </M.div>
   )
 }
 
@@ -91,9 +94,9 @@ export default function TrophyCabinet({ userId, isOwn }) {
           Pin your proudest achievements here — click <strong>Edit</strong> to choose up to {MAX}.
         </div>
       ) : (
-        <div className="trophy-grid">
+        <M.div className="trophy-grid" variants={staggerContainer} initial="hidden" animate="show">
           {trophies.map(a => <TrophyTile key={a.id} a={a} />)}
-        </div>
+        </M.div>
       )}
 
       {editing && (

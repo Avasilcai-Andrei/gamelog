@@ -1,9 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { motion } from 'motion/react'
 import { useGames } from '../context/GameContext'
 import { useAuth } from '../context/AuthContext'
 import { Trophy } from 'lucide-react'
 import ChallengeCard from '../components/ChallengeCard'
+import Reveal from '../motion/Reveal'
+import CountUp from '../motion/CountUp'
+
+const M = motion
 
 // Rating → tier label/flair, purely cosmetic.
 function tierOf(rating) {
@@ -38,7 +43,7 @@ export default function Leaderboard() {
         Skill, not hours.
       </p>
 
-      <ChallengeCard />
+      <Reveal><ChallengeCard /></Reveal>
 
       {board === null ? (
         <div className="card" style={{ textAlign: 'center', padding: 40, color: 'var(--text-muted)' }}>
@@ -49,7 +54,7 @@ export default function Leaderboard() {
           No rated players yet — tick the achievements you've earned on a game's page to get on the board.
         </div>
       ) : (
-        <div className="card gamepage-table-card">
+        <Reveal className="card gamepage-table-card">
           <table className="table">
             <thead>
               <tr>
@@ -61,13 +66,18 @@ export default function Leaderboard() {
                 <th>Games</th>
               </tr>
             </thead>
-            <tbody>
+            <M.tbody
+              initial="hidden"
+              animate="show"
+              variants={{ show: { transition: { staggerChildren: 0.04 } } }}
+            >
               {board.map(row => {
                 const medal = row.rank === 1 ? '🥇' : row.rank === 2 ? '🥈' : row.rank === 3 ? '🥉' : row.rank
                 const tier = tierOf(row.rating)
                 const isMe = row.userId === currentUser?.id
                 return (
-                  <tr key={row.userId}
+                  <M.tr key={row.userId}
+                    variants={{ hidden: { opacity: 0 }, show: { opacity: 1 } }}
                     className={`clickable-row ${isMe ? 'leaderboard-me' : ''}`}
                     onClick={() => navigate(`/player/${row.userId}`)}>
                     <td className="gamepage-rank" data-label="#">{medal}</td>
@@ -77,16 +87,16 @@ export default function Leaderboard() {
                         <span className="text-strong">{row.username}{isMe && <span className="text-secondary"> (you)</span>}</span>
                       </div>
                     </td>
-                    <td data-label="Vauntd Rating"><span className="leaderboard-rating">{row.rating}</span></td>
+                    <td data-label="Vauntd Rating"><CountUp className="leaderboard-rating" value={row.rating} duration={0.9} /></td>
                     <td data-label="Tier"><span className="leaderboard-tier" style={{ color: tier.color }}>{tier.name}</span></td>
                     <td className="text-secondary" data-label="Achievements">{row.achievementsEarned}</td>
                     <td className="text-secondary" data-label="Games">{row.gamesRanked}</td>
-                  </tr>
+                  </M.tr>
                 )
               })}
-            </tbody>
+            </M.tbody>
           </table>
-        </div>
+        </Reveal>
       )}
     </div>
   )

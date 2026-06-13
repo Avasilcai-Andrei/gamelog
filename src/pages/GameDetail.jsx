@@ -1,10 +1,16 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { motion } from 'motion/react'
 import { useAuth } from '../context/AuthContext'
 import { useGames } from '../context/GameContext'
 import { ChevronLeft, Trophy, Target } from 'lucide-react'
 import { validateSession } from '../utils/validators'
 import AchievementChecklist from '../components/AchievementChecklist'
+import Reveal from '../motion/Reveal'
+import CountUp from '../motion/CountUp'
+import { fadeUp } from '../motion/tokens'
+
+const M = motion
 
 const PAGE_SIZE = 3
 
@@ -226,7 +232,7 @@ export default function GameDetail() {
       </button>
 
       <div className="detail-layout">
-        <div className="detail-left">
+        <Reveal className="detail-left">
           {game.coverUrl ? (
             <img src={game.coverUrl} alt={game.title} className="detail-cover" />
           ) : (
@@ -255,12 +261,12 @@ export default function GameDetail() {
             <div className="detail-stat-card ach-score-card">
               <div className="detail-stat-label"><Trophy size={13} /> Skill Score</div>
               <div className="detail-stat-value">
-                {Math.round(skillScore)}<span className="ach-score-max"> / {Math.round(maxScore)}</span>
+                <CountUp as="span" value={Math.round(skillScore)} duration={0.8} /><span className="ach-score-max"> / {Math.round(maxScore)}</span>
               </div>
               <div className="ach-score-sub">{unlocked.size}/{catalog.length} achievements</div>
             </div>
           )}
-        </div>
+        </Reveal>
 
         <div className="detail-right">
           <div className="detail-session-header">Session Log</div>
@@ -270,7 +276,8 @@ export default function GameDetail() {
               No sessions yet — log your first one!
             </div>
           ) : paginated.map(session => (
-            <div key={session.id} className="session-card">
+            <M.div key={session.id} className="session-card"
+              variants={fadeUp} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }}>
               <div className="session-meta">
                 <div className="session-date">{formatDate(session.date)}</div>
                 <div className="session-duration">{formatDuration(session.duration)}</div>
@@ -282,7 +289,7 @@ export default function GameDetail() {
                 <button className="btn btn-danger btn-sm"
                   onClick={() => setDeleteConfirm(session)}>Delete</button>
               </div>
-            </div>
+            </M.div>
           ))}
 
           {totalPages > 1 && (
@@ -307,7 +314,7 @@ export default function GameDetail() {
           </button>
 
           {chase.length > 0 && (
-            <div className="chase-card">
+            <Reveal className="chase-card">
               <div className="chase-head"><Target size={15} /> Next feats to chase</div>
               {chase.map(a => (
                 <div key={a.id} className="chase-row">
@@ -318,7 +325,7 @@ export default function GameDetail() {
                   <span className="chase-pts">+{a.weight}</span>
                 </div>
               ))}
-            </div>
+            </Reveal>
           )}
 
           {/* Standalone achievements panel — for marking what you've completed

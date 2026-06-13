@@ -1,9 +1,15 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { motion } from 'motion/react'
 import { useGames } from '../context/GameContext'
 import { useAuth } from '../context/AuthContext'
 import { ChevronLeft, Clock, Gamepad2, CheckCircle, Trophy } from 'lucide-react'
 import TrophyCabinet from '../components/TrophyCabinet'
+import Reveal from '../motion/Reveal'
+import CountUp from '../motion/CountUp'
+import { fadeUp, staggerContainer } from '../motion/tokens'
+
+const M = motion
 
 export default function PlayerProfile() {
   const { userId } = useParams()
@@ -51,11 +57,11 @@ export default function PlayerProfile() {
       </div>
 
       {rating && rating.rating > 0 && (
-        <div className="profile-rating-card" onClick={() => navigate('/leaderboard')}>
+        <Reveal variant="scaleIn" className="profile-rating-card" onClick={() => navigate('/leaderboard')}>
           <Trophy size={26} color="var(--accent-orange)" />
           <div>
             <div className="stat-card-label">Vauntd Rating</div>
-            <div className="profile-rating-value">{rating.rating}</div>
+            <CountUp as="div" className="profile-rating-value" value={rating.rating} />
           </div>
           {rating.rank && (
             <div className="profile-rating-rank">
@@ -63,37 +69,38 @@ export default function PlayerProfile() {
               <span className="stat-card-label">of {rating.total}</span>
             </div>
           )}
-        </div>
+        </Reveal>
       )}
 
-      <div className="stat-cards" style={{ marginBottom: 28 }}>
-        <div className="stat-card">
+      <M.div className="stat-cards" style={{ marginBottom: 28 }}
+        variants={staggerContainer} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.3 }}>
+        <M.div className="stat-card lift-hover" variants={fadeUp}>
           <div>
             <div className="stat-card-label">Total Games</div>
-            <div className="stat-card-value">{stats.totalGames}</div>
+            <CountUp as="div" className="stat-card-value" value={stats.totalGames} />
           </div>
           <Gamepad2 size={28} color="var(--accent-blue)" />
-        </div>
-        <div className="stat-card">
+        </M.div>
+        <M.div className="stat-card lift-hover" variants={fadeUp}>
           <div>
             <div className="stat-card-label">Hours Logged</div>
-            <div className="stat-card-value">{stats.totalHours}</div>
+            <CountUp as="div" className="stat-card-value" value={stats.totalHours} />
           </div>
           <Clock size={28} color="var(--accent-blue)" />
-        </div>
-        <div className="stat-card">
+        </M.div>
+        <M.div className="stat-card lift-hover" variants={fadeUp}>
           <div>
             <div className="stat-card-label">Completion Rate</div>
-            <div className="stat-card-value">{stats.completionRate}%</div>
+            <CountUp as="div" className="stat-card-value" value={stats.completionRate} format={(n) => `${Math.round(n)}%`} />
           </div>
           <CheckCircle size={28} color="var(--accent-blue)" />
-        </div>
-      </div>
+        </M.div>
+      </M.div>
 
       <TrophyCabinet userId={userId} isOwn={isOwnProfile} />
 
       <h2 style={{ fontSize: 16, fontWeight: 600, marginBottom: 16 }}>Game Library</h2>
-      <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+      <Reveal className="card" style={{ padding: 0, overflow: 'hidden' }}>
         <table className="table">
           <thead>
             <tr>
@@ -127,7 +134,7 @@ export default function PlayerProfile() {
             ))}
           </tbody>
         </table>
-      </div>
+      </Reveal>
     </div>
   )
 }

@@ -1,9 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { motion } from 'motion/react'
 import { useGames } from '../context/GameContext'
 import { useAuth } from '../context/AuthContext'
 import { Trophy } from 'lucide-react'
 import { genreOptions } from '../utils/genres'
+import { fadeUp, SPRING } from '../motion/tokens'
+
+const M = motion
 
 const PAGE_SIZE = 12
 
@@ -28,7 +32,15 @@ function GameCard({ game, users, currentUser, onOpen }) {
     : null
 
   return (
-    <div className="gamelist-card" onClick={onOpen}>
+    <M.div
+      className="gamelist-card"
+      onClick={onOpen}
+      variants={fadeUp}
+      initial="hidden"
+      whileInView="show"
+      viewport={{ once: true, amount: 0.2 }}
+      whileHover={{ y: -4, transition: SPRING }}
+    >
       {game.coverUrl ? (
         <img src={game.coverUrl} alt={game.title} className="gamelist-cover"
           onError={e => e.target.style.display = 'none'} />
@@ -47,7 +59,7 @@ function GameCard({ game, users, currentUser, onOpen }) {
           </div>
         )}
       </div>
-    </div>
+    </M.div>
   )
 }
 

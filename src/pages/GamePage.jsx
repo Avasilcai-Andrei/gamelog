@@ -1,8 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { motion } from 'motion/react'
 import { useGames } from '../context/GameContext'
 import { useAuth } from '../context/AuthContext'
 import { ChevronLeft, Clock, CheckCircle, Gamepad2, Network, Trophy, TrendingUp } from 'lucide-react'
+import Reveal from '../motion/Reveal'
+import CountUp from '../motion/CountUp'
+import { scaleIn, staggerContainer } from '../motion/tokens'
+
+const M = motion
 
 export default function GamePage() {
   const { title } = useParams()
@@ -129,33 +135,34 @@ export default function GamePage() {
             <Network size={14} /> Open Lore Map
           </button>
 
-          <div className="gamepage-stats-grid">
-            <div className="gamepage-statbox">
+          <M.div className="gamepage-stats-grid"
+            variants={staggerContainer} initial="hidden" animate="show">
+            <M.div className="gamepage-statbox" variants={scaleIn}>
               <Gamepad2 size={18} color="var(--accent-blue)" />
-              <div className="gamepage-stat-value">{totalPlayers}</div>
+              <CountUp className="gamepage-stat-value" value={totalPlayers} />
               <div className="gamepage-stat-label">Players</div>
-            </div>
-            <div className="gamepage-statbox">
+            </M.div>
+            <M.div className="gamepage-statbox" variants={scaleIn}>
               <Clock size={18} color="var(--accent-blue)" />
-              <div className="gamepage-stat-value">{totalHours}h</div>
+              <CountUp className="gamepage-stat-value" value={totalHours} format={(n) => `${Math.round(n)}h`} />
               <div className="gamepage-stat-label">Total Hours</div>
-            </div>
-            <div className="gamepage-statbox">
+            </M.div>
+            <M.div className="gamepage-statbox" variants={scaleIn}>
               <Clock size={18} color="var(--accent-orange)" />
-              <div className="gamepage-stat-value">{avgHours}h</div>
+              <CountUp className="gamepage-stat-value" value={avgHours} format={(n) => `${Math.round(n)}h`} />
               <div className="gamepage-stat-label">Avg Hours</div>
-            </div>
-            <div className="gamepage-statbox">
+            </M.div>
+            <M.div className="gamepage-statbox" variants={scaleIn}>
               <CheckCircle size={18} color="var(--accent-green)" />
-              <div className="gamepage-stat-value">{avgProgress}%</div>
+              <CountUp className="gamepage-stat-value" value={avgProgress} format={(n) => `${Math.round(n)}%`} />
               <div className="gamepage-stat-label">Avg Progress</div>
-            </div>
-          </div>
+            </M.div>
+          </M.div>
         </div>
       </div>
 
       {ownsGame && catalog.length > 0 && (
-        <div className="climb-card">
+        <Reveal className="climb-card">
           <div className="climb-head"><TrendingUp size={16} /> Climb the ranking</div>
           {unearned.length === 0 ? (
             <div className="climb-msg">🏆 You've earned every achievement on this game. Untouchable.</div>
@@ -179,14 +186,14 @@ export default function GamePage() {
           ) : (
             <div className="climb-msg">Earn more achievements to climb — every rare one moves you up.</div>
           )}
-        </div>
+        </Reveal>
       )}
 
       <h2 className="gamepage-subtitle">
         <Trophy size={18} /> Skill Rankings
         <span className="gamepage-subtitle-note">ranked by achievement difficulty, not hours</span>
       </h2>
-      <div className="card gamepage-table-card">
+      <Reveal className="card gamepage-table-card">
         <table className="table">
           <thead>
             <tr>
@@ -198,7 +205,8 @@ export default function GamePage() {
               <th>Hours</th>
             </tr>
           </thead>
-          <tbody>
+          <M.tbody initial="hidden" animate="show"
+            variants={{ show: { transition: { staggerChildren: 0.05 } } }}>
             {ranked.map((entry, i) => {
               const username = getUserName(entry.userId)
               const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : i + 1
@@ -208,7 +216,8 @@ export default function GamePage() {
                 ? Math.round(((stat?.unlockedCount || 0) / ranking.totalCount) * 100)
                 : 0
               return (
-                <tr key={entry.userId + entry.id}
+                <M.tr key={entry.userId + entry.id}
+                  variants={{ hidden: { opacity: 0 }, show: { opacity: 1 } }}
                   className="clickable-row"
                   onClick={() => navigate(`/player/${entry.userId}`)}>
                   <td className="gamepage-rank" data-label="#">{medal}</td>
@@ -221,7 +230,7 @@ export default function GamePage() {
                     </div>
                   </td>
                   <td data-label="Skill Score">
-                    <span className="gamepage-score">{Math.round(score)}</span>
+                    <CountUp className="gamepage-score" value={Math.round(score)} duration={0.8} />
                     {ranking.maxScore > 0 && (
                       <span className="text-secondary"> / {Math.round(ranking.maxScore)}</span>
                     )}
@@ -242,12 +251,12 @@ export default function GamePage() {
                     </span>
                   </td>
                   <td className="text-secondary" data-label="Hours">{entry.hours}h</td>
-                </tr>
+                </M.tr>
               )
             })}
-          </tbody>
+          </M.tbody>
         </table>
-      </div>
+      </Reveal>
     </div>
   )
 }

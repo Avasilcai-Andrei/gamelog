@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { motion } from 'motion/react'
 import { useAuth } from '../context/AuthContext'
 import { useGames } from '../context/GameContext'
 import { useActivity } from '../context/ActivityContext'
@@ -6,6 +7,11 @@ import {
   PieChart, Pie, Cell, Tooltip, ResponsiveContainer,
   BarChart, Bar, XAxis, YAxis, CartesianGrid
 } from 'recharts'
+import Reveal from '../motion/Reveal'
+import CountUp from '../motion/CountUp'
+import { fadeUp, staggerContainer } from '../motion/tokens'
+
+const M = motion
 
 const STATUS_COLORS = {
   playing:   '#4caf50',
@@ -65,33 +71,34 @@ export default function Stats() {
         </div>
       </div>
 
-      <div className="stat-cards">
-        <div className="stat-card">
+      <M.div className="stat-cards"
+        variants={staggerContainer} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.3 }}>
+        <M.div className="stat-card lift-hover" variants={fadeUp}>
           <div>
             <div className="stat-card-label">Total Games</div>
-            <div className="stat-card-value">{stats.totalGames}</div>
+            <CountUp as="div" className="stat-card-value" value={stats.totalGames} />
           </div>
           <span style={{ fontSize: 28 }}>🎮</span>
-        </div>
-        <div className="stat-card">
+        </M.div>
+        <M.div className="stat-card lift-hover" variants={fadeUp}>
           <div>
             <div className="stat-card-label">Hours Logged</div>
-            <div className="stat-card-value">{stats.totalHours}</div>
+            <CountUp as="div" className="stat-card-value" value={stats.totalHours} />
           </div>
           <span style={{ fontSize: 28 }}>⏱️</span>
-        </div>
-        <div className="stat-card">
+        </M.div>
+        <M.div className="stat-card lift-hover" variants={fadeUp}>
           <div>
             <div className="stat-card-label">Completion %</div>
-            <div className="stat-card-value">{stats.completionRate}%</div>
+            <CountUp as="div" className="stat-card-value" value={stats.completionRate} format={(n) => `${Math.round(n)}%`} />
           </div>
           <span style={{ fontSize: 28 }}>🏆</span>
-        </div>
-      </div>
+        </M.div>
+      </M.div>
 
       {view === 'visual' ? (
         <div className="stats-charts">
-          <div className="card">
+          <Reveal className="card">
             <div style={{ fontWeight: 600, marginBottom: 16 }}>Game Status Breakdown</div>
             {pieData.length === 0 ? (
               <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 40 }}>No data yet</div>
@@ -109,9 +116,9 @@ export default function Stats() {
                 </PieChart>
               </ResponsiveContainer>
             )}
-          </div>
+          </Reveal>
 
-          <div className="card">
+          <Reveal className="card" delay={0.08}>
             <div style={{ fontWeight: 600, marginBottom: 16 }}>Hours Logged per Game</div>
             {barData.length === 0 ? (
               <div style={{ color: 'var(--text-muted)', textAlign: 'center', padding: 40 }}>No data yet</div>
@@ -126,10 +133,10 @@ export default function Stats() {
                 </BarChart>
               </ResponsiveContainer>
             )}
-          </div>
+          </Reveal>
         </div>
       ) : (
-        <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+        <Reveal className="card" style={{ padding: 0, overflow: 'hidden' }}>
           <table className="table">
             <thead>
               <tr>
@@ -163,17 +170,17 @@ export default function Stats() {
               ))}
             </tbody>
           </table>
-        </div>
+        </Reveal>
       )}
 
       {/* Cookie-based activity tracking — moved here from the old Insights page. */}
-      <div className="card" style={{ marginTop: 20 }}>
+      <Reveal className="card" style={{ marginTop: 20 }}>
         <div style={{ fontWeight: 600, marginBottom: 16 }}>Cookie Activity Monitor</div>
         <div className="insights-activity-grid">
           <div className="stat-card">
             <div>
               <div className="stat-card-label">Page Views</div>
-              <div className="stat-card-value">{activity.totalViews}</div>
+              <CountUp as="div" className="stat-card-value" value={activity.totalViews} />
             </div>
           </div>
           <div className="stat-card">
@@ -191,7 +198,7 @@ export default function Stats() {
             </div>
           ))}
         </div>
-      </div>
+      </Reveal>
     </div>
   )
 }

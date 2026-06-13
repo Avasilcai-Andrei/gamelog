@@ -1,7 +1,13 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
+import { MotionConfig, AnimatePresence, motion } from 'motion/react'
 import { AuthProvider, useAuth } from './context/AuthContext'
 import { GameProvider } from './context/GameContext'
 import { ActivityProvider } from './context/ActivityContext'
+import { pageVariants } from './motion/tokens'
+
+// Aliased so the linter (no eslint-plugin-react here) sees `motion` as used and
+// the JSX tag stays uppercase-friendly.
+const MotionDiv = motion.div
 
 import Landing from './pages/Landing'
 import Login from './pages/Login'
@@ -37,11 +43,22 @@ function AdminRoute({ children }) {
 
 function AppRoutes() {
   const { currentUser } = useAuth()
+  const location = useLocation()
 
   return (
     <>
       <Navbar />
-      <Routes>
+      {/* Animate the route container on path change. mode="wait" lets the old
+          page fade out before the new one enters; Navbar stays mounted above. */}
+      <AnimatePresence mode="wait" initial={false}>
+        <MotionDiv
+          key={location.pathname}
+          variants={pageVariants}
+          initial="hidden"
+          animate="show"
+          exit="exit"
+        >
+          <Routes location={location}>
         <Route path="/" element={<Landing />} />
         <Route path="/login" element={
           currentUser ? <Navigate to="/library" replace /> : <Login />
@@ -76,7 +93,9 @@ function AppRoutes() {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route path="/email-verify" element={<EmailVerify />} />
         <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+          </Routes>
+        </MotionDiv>
+      </AnimatePresence>
     </>
   )
 }
@@ -84,13 +103,17 @@ function AppRoutes() {
 export default function App() {
   return (
     <BrowserRouter>
-      <ActivityProvider>
-        <AuthProvider>
-          <GameProvider>
-            <AppRoutes />
-          </GameProvider>
-        </AuthProvider>
-      </ActivityProvider>
+      {/* reducedMotion="user" makes every motion component honor the OS
+          "reduce motion" setting automatically. */}
+      <MotionConfig reducedMotion="user">
+        <ActivityProvider>
+          <AuthProvider>
+            <GameProvider>
+              <AppRoutes />
+            </GameProvider>
+          </AuthProvider>
+        </ActivityProvider>
+      </MotionConfig>
     </BrowserRouter>
   )
 }

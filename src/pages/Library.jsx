@@ -1,11 +1,15 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { motion } from 'motion/react'
 import { useAuth } from '../context/AuthContext'
 import { useGames } from '../context/GameContext'
 import GameForm from '../components/GameForm'
 import Wrapped from '../components/Wrapped'
 import { Sparkles } from 'lucide-react'
 import { genreOptions } from '../utils/genres'
+import Reveal from '../motion/Reveal'
+
+const M = motion
 
 const PAGE_SIZE = 5
 
@@ -92,7 +96,7 @@ export default function Library() {
         </select>
       </div>
 
-      <div className="card library-table-card">
+      <Reveal className="card library-table-card">
         <table className="table">
           <thead>
             <tr>
@@ -105,7 +109,9 @@ export default function Library() {
               <th className="col-actions"></th>
             </tr>
           </thead>
-          <tbody>
+          <M.tbody key={`${search}|${filterStatus}|${filterGenre}|${page}`}
+            initial="hidden" animate="show"
+            variants={{ show: { transition: { staggerChildren: 0.045 } } }}>
             {paginated.length === 0 ? (
               <tr>
                 <td colSpan={7} className="table-empty">
@@ -113,8 +119,9 @@ export default function Library() {
                 </td>
               </tr>
             ) : paginated.map(game => (
-              <tr
+              <M.tr
                 key={game.id}
+                variants={{ hidden: { opacity: 0, y: 8 }, show: { opacity: 1, y: 0 } }}
                 className="clickable-row"
                 onClick={() => navigate(`/game/${game.id}`)}
               >
@@ -137,9 +144,9 @@ export default function Library() {
                       onClick={() => setDeleteConfirm(game)}>Delete</button>
                   </div>
                 </td>
-              </tr>
+              </M.tr>
             ))}
-          </tbody>
+          </M.tbody>
         </table>
 
         {totalPages > 1 && (
@@ -155,7 +162,7 @@ export default function Library() {
             ))}
           </div>
         )}
-      </div>
+      </Reveal>
 
       {showWrapped && <Wrapped onClose={() => setShowWrapped(false)} />}
 
