@@ -57,20 +57,13 @@ const MAPS = [
     routes: [[0, 1], [1, 2], [1, 3], [0, 5], [5, 6], [6, 7]],
   },
   {
+    // Intentionally pin-free: the background map is set, but no pins are seeded
+    // (owner prefers Hollow Knight left empty). Empty arrays mean a re-run sets
+    // the background without ever adding pins back.
     title: 'Hollow Knight',
     background: MAP_BG['Hollow Knight'],
-    pins: [
-      { label: 'Dirtmouth', type: 'location', x: 50, y: 12, description: 'The quiet town above the kingdom. Elderbug, Sly, and the well down into Hallownest.' },
-      { label: 'Forgotten Crossroads', type: 'location', x: 48, y: 28, description: 'The first sprawling area below Dirtmouth, riddled with infected bugs.' },
-      { label: 'False Knight', type: 'boss', x: 40, y: 32, description: 'A hulking armoured corpse-wielder — the first true skill check.' },
-      { label: 'Greenpath', type: 'location', x: 25, y: 45, description: 'Lush, acid-soaked verdant caverns west of the Crossroads.' },
-      { label: 'Hornet', type: 'boss', x: 22, y: 52, description: 'Agile needle-duelist who tests your dash and pogo timing.' },
-      { label: 'City of Tears', type: 'dungeon', x: 58, y: 55, description: 'Rain-soaked capital at the kingdom’s core. Gateway deeper.' },
-      { label: 'Soul Master', type: 'boss', x: 62, y: 50, description: 'Sorcerer of the Soul Sanctum — teleports and slams.' },
-      { label: 'Sly’s Shop', type: 'shop', x: 52, y: 15, description: 'Charms, nail upgrades, and maps once you coax him back to Dirtmouth.' },
-      { label: 'Mantis Lords', type: 'boss', x: 35, y: 70, description: 'A revered trio duel in Mantis Village — a community-favourite fight.' },
-    ],
-    routes: [[0, 1], [1, 2], [1, 3], [3, 4], [1, 5], [5, 6]],
+    pins: [],
+    routes: [],
   },
   {
     title: 'Dark Souls: Remastered',
